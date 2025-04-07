@@ -6,13 +6,19 @@
   <title>Fakecord</title>
   <script src="https://cdn.tailwindcss.com"></script>
   <style>
+    /* Reaction styling */
     .reaction {
       cursor: pointer;
       transition: transform 0.2s;
     }
-    .reaction:hover { transform: scale(1.25); }
-    .modal-bg { background: rgba(0, 0, 0, 0.6); }
-    /* Mention dropdown styling */
+    .reaction:hover {
+      transform: scale(1.25);
+    }
+    /* Modal backdrop */
+    .modal-bg {
+      background: rgba(0, 0, 0, 0.6);
+    }
+    /* Mention dropdown */
     .mention-dropdown {
       position: absolute;
       background: #1f2937;
@@ -32,12 +38,32 @@
     .mention-glow {
       box-shadow: 0 0 8px 2px yellow;
     }
+    /* Toast Notification */
+    #toast {
+      position: fixed;
+      top: 20px;
+      right: 20px;
+      background: rgba(16, 185, 129, 0.9);
+      padding: 1rem 1.5rem;
+      border-radius: 0.5rem;
+      color: white;
+      font-weight: bold;
+      z-index: 200;
+      opacity: 0;
+      transition: opacity 0.5s ease;
+    }
+    #toast.show {
+      opacity: 1;
+    }
   </style>
 </head>
 <body class="bg-gray-900 text-white h-screen overflow-hidden">
+  <!-- Toast Notification for Friend Request -->
+  <div id="toast">Friend request sent!</div>
+
   <!-- Main Container -->
   <div class="flex h-full">
-    <!-- Sidebar: Top portion for DMs, bottom for Servers -->
+    <!-- Sidebar: DM icons on top, decorative servers at bottom -->
     <div class="bg-gray-800 w-20 flex flex-col justify-between py-4">
       <div>
         <h3 class="text-center text-xs uppercase tracking-wide mb-2">DMs</h3>
@@ -49,9 +75,10 @@
         <hr class="border-gray-600 my-2" />
         <h3 class="text-center text-xs uppercase tracking-wide mb-2">Servers</h3>
         <div id="serverSection" class="flex flex-col items-center space-y-4">
-          <button onclick="switchServer('anne')" class="bg-pink-500 w-12 h-12 rounded-full text-white font-bold">A</button>
-          <button onclick="switchServer('clyde')" class="bg-blue-500 w-12 h-12 rounded-full text-white font-bold">C</button>
-          <button onclick="switchServer('dollie')" class="bg-purple-500 w-12 h-12 rounded-full text-white font-bold">D</button>
+          <!-- Decorative server icons -->
+          <button class="bg-pink-500 w-12 h-12 rounded-full text-white font-bold">A</button>
+          <button class="bg-blue-500 w-12 h-12 rounded-full text-white font-bold">C</button>
+          <button class="bg-purple-500 w-12 h-12 rounded-full text-white font-bold">D</button>
           <button class="bg-gray-700 w-12 h-12 rounded-full text-xl flex items-center justify-center">+</button>
         </div>
       </div>
@@ -78,14 +105,16 @@
           <!-- Chat Header -->
           <div class="bg-gray-800 p-4 flex items-center gap-3">
             <img id="currentChatAvatar" src="default-avatar.png" alt="Chat Avatar" class="w-10 h-10 rounded-full cursor-pointer" onclick="showProfile(currentChat, 'bot')">
-            <h2 id="channelTitle" class="text-xl font-bold">DM - Anne</h2>
-            <!-- Notification badge (if any) appears here on non-active chats -->
+            <div>
+              <h2 id="channelTitle" class="text-xl font-bold">DM - Anne</h2>
+              <p id="channelStatus" class="text-xs text-gray-400">Status: Online</p>
+            </div>
           </div>
           <!-- Chat Messages -->
           <div id="chatBox" class="flex-1 overflow-y-auto p-4 space-y-4 bg-gray-900 relative"></div>
           <!-- Message Input Area -->
           <div class="p-4 bg-gray-800 flex gap-2 items-center relative">
-            <input type="file" id="fileInput" class="hidden" accept="image/*"/>
+            <input type="file" id="fileInput" class="hidden" accept="image/*" />
             <button onclick="document.getElementById('fileInput').click()" class="text-white">📎</button>
             <input id="messageInput" type="text" placeholder="Message..." class="flex-1 p-2 rounded bg-gray-700 text-white outline-none" onkeyup="checkMention(event)" autocomplete="off"/>
             <button onclick="sendMessage()" class="bg-blue-500 px-4 py-1 rounded hover:bg-blue-400">Send</button>
@@ -119,6 +148,7 @@
         <img id="modalAvatar" src="default-avatar.png" alt="Avatar" class="w-16 h-16 rounded-full border-2 border-white cursor-pointer">
         <div>
           <h3 id="modalName" class="text-xl font-bold"></h3>
+          <p id="modalStatus" class="text-xs text-gray-400"></p>
           <p id="modalBio" class="text-sm text-gray-400"></p>
         </div>
       </div>
@@ -133,6 +163,7 @@
       <input id="settingAvatar" type="text" placeholder="Avatar URL" class="w-full border p-2 rounded mb-2" />
       <input id="settingBanner" type="text" placeholder="Banner URL" class="w-full border p-2 rounded mb-2" />
       <input id="settingUsername" type="text" placeholder="Username" class="w-full border p-2 rounded mb-2" />
+      <input id="settingStatus" type="text" placeholder="Status (e.g., Online, Busy)" class="w-full border p-2 rounded mb-2" />
       <textarea id="settingBio" placeholder="Bio..." class="w-full border p-2 rounded mb-4"></textarea>
       <button onclick="saveSettings()" class="bg-blue-500 text-white w-full py-2 rounded hover:bg-blue-400">Save</button>
     </div>
@@ -144,6 +175,7 @@
       name: "Myself",
       avatar: "default-avatar.png",
       banner: "default-banner.png",
+      status: "Online",
       bio: "This is my bio."
     };
 
@@ -152,6 +184,7 @@
         name: "Anne",
         avatar: "default-avatar.png",
         banner: "default-banner.png",
+        status: "Online",
         bio: "Your kawaii bunny bot 💖. Ask me anything!",
         notifications: 0
       },
@@ -159,6 +192,7 @@
         name: "Clyde",
         avatar: "default-avatar.png",
         banner: "default-banner.png",
+        status: "Do Not Disturb",
         bio: "I'm silent but deadly 🤖.",
         notifications: 0
       },
@@ -166,6 +200,7 @@
         name: "Dollie",
         avatar: "default-avatar.png",
         banner: "default-banner.png",
+        status: "Idle",
         bio: "Creepy cute and full of surprises 🖤.",
         notifications: 0
       }
@@ -175,11 +210,7 @@
     let friends = { ...bots };
 
     // Notification counts for DM icons (for non-active chats)
-    let dmNotifications = {
-      anne: 0,
-      clyde: 0,
-      dollie: 0
-    };
+    let dmNotifications = { anne: 0, clyde: 0, dollie: 0 };
 
     // Current chat partner key ("anne", "clyde", "dollie", or "self")
     let currentChat = "anne";
@@ -190,14 +221,9 @@
     // Mention data: all possible names (bots + myProfile + friends)
     function getMentionCandidates() {
       const candidates = [];
-      // Add bots
-      for (let key in bots) { candidates.push({key, name: bots[key].name}); }
-      // Add my profile
-      candidates.push({key: "self", name: myProfile.name});
-      // Add any additional friends
-      for (let key in friends) {
-        if (!bots[key]) { candidates.push({key, name: friends[key].name}); }
-      }
+      for (let key in bots) { candidates.push({ key, name: bots[key].name }); }
+      candidates.push({ key: "self", name: myProfile.name });
+      for (let key in friends) { if (!bots[key]) { candidates.push({ key, name: friends[key].name }); } }
       return candidates;
     }
 
@@ -213,7 +239,6 @@
     function loadDMIcons() {
       const dmSection = document.getElementById("dmSection");
       dmSection.innerHTML = "";
-      // Only show bots as DM icons
       for (let key in bots) {
         const bot = bots[key];
         let badge = "";
@@ -232,18 +257,14 @@
     }
 
     function openDM(userKey) {
-      // Reset notifications for that DM
       dmNotifications[userKey] = 0;
       updateBadge(userKey);
-      // Switch chat partner
-      switchServer(userKey);
+      switchDM(userKey);
     }
 
     function updateBadge(userKey) {
       const badgeEl = document.getElementById("badge-" + userKey);
-      if (badgeEl) {
-        badgeEl.remove();
-      }
+      if (badgeEl) { badgeEl.remove(); }
     }
 
     // ===== Tab Switching =====
@@ -257,16 +278,18 @@
       document.getElementById("friendsTabBtn").classList.toggle("bg-gray-600", tab !== "friends");
     }
 
-    // ===== Server (Chat Partner) Switching =====
-    function switchServer(userKey) {
+    // ===== DM (Chat Partner) Switching =====
+    function switchDM(userKey) {
       if (bots[userKey]) {
         currentChat = userKey;
         document.getElementById("channelTitle").textContent = "DM - " + bots[userKey].name;
         document.getElementById("currentChatAvatar").src = bots[userKey].avatar;
+        document.getElementById("channelStatus").textContent = "Status: " + bots[userKey].status;
       } else if (userKey === "self") {
         currentChat = "self";
         document.getElementById("channelTitle").textContent = "DM - " + myProfile.name;
         document.getElementById("currentChatAvatar").src = myProfile.avatar;
+        document.getElementById("channelStatus").textContent = "Status: " + myProfile.status;
       }
       loadChat();
       loadDMIcons();
@@ -275,11 +298,10 @@
     // ===== Chat Messages =====
     function loadChat() {
       const chatBox = document.getElementById("chatBox");
-      chatBox.innerHTML = "";
-      // If currentChat is a bot, load a welcome message
+      chatBox.innerHTML = ""; // clear previous chat
       if (bots[currentChat]) {
         const bot = bots[currentChat];
-        const time = new Date().toLocaleTimeString([], {hour: '2-digit', minute:'2-digit'});
+        const time = new Date().toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' });
         chatBox.innerHTML += `
           <div class="flex items-start gap-3">
             <img src="${bot.avatar}" class="w-10 h-10 rounded-full cursor-pointer" onclick="showProfile('${currentChat}','bot')">
@@ -305,15 +327,13 @@
       const fileInput = document.getElementById("fileInput");
       const chatBox = document.getElementById("chatBox");
       let message = messageInput.value.trim();
-      const time = new Date().toLocaleTimeString([], {hour: '2-digit', minute:'2-digit'});
-      // Check for file attachment
+      const time = new Date().toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' });
       let fileHTML = "";
       if (fileInput.files.length > 0) {
         const imgURL = URL.createObjectURL(fileInput.files[0]);
         fileHTML = `<img src="${imgURL}" class="mt-2 max-w-xs rounded" />`;
         fileInput.value = "";
       }
-      // If mention exists in message, add a yellow glow class
       const hasMention = message.includes("@");
       const mentionClass = hasMention ? "mention-glow" : "";
       if (!message && !fileHTML) return;
@@ -342,7 +362,7 @@
       if (bots[currentChat]) {
         setTimeout(() => {
           const botReply = getBotReply(message);
-          const replyTime = new Date().toLocaleTimeString([], {hour: '2-digit', minute:'2-digit'});
+          const replyTime = new Date().toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' });
           const replyHTML = `
             <div class="flex items-start gap-3">
               <img src="${bots[currentChat].avatar}" class="w-10 h-10 rounded-full cursor-pointer" onclick="showProfile('${currentChat}','bot')">
@@ -361,22 +381,34 @@
             </div>`;
           chatBox.innerHTML += replyHTML;
           chatBox.scrollTop = chatBox.scrollHeight;
-          // If user is not actively in this DM, update notification count.
-          if (currentChat !== Object.keys(bots).find(key => key === currentChat)) {
-            dmNotifications[currentChat] = (dmNotifications[currentChat] || 0) + 1;
-            loadDMIcons();
-          }
         }, 1000);
       }
     }
 
+    // Allow sending messages by pressing Enter
+    document.getElementById("messageInput").addEventListener("keyup", function(e) {
+      if (e.key === "Enter") {
+        sendMessage();
+      }
+    });
+
     function getBotReply(userMessage) {
       const lower = userMessage.toLowerCase();
-      if (lower.includes("hello")) return "Hiii~ 💕";
-      if (lower.includes("help")) return "I'm here to chat and make you smile!";
-      if (lower.includes("how are you")) return "I'm just a bot, but I'm doing great!";
+      // Expanded responses:
+      if (lower.includes("hello")) return "Hiii~ 💕 How can I help you today?";
+      if (lower.includes("help")) return "I'm here to chat, listen, and make you smile! What do you need?";
+      if (lower.includes("how are you")) return "I'm doing great, thank you! Ready to spread some cheer!";
       if (lower.includes("bye")) return "See you later~ ✨";
-      return "Hehe, tell me more~";
+      if (lower.includes("love")) return "Aww, love is in the air! 💖";
+      if (lower.includes("sad")) return "I'm sorry to hear that. Remember, I'm here for you!";
+      if (lower.includes("joke")) return "Why did the bot cross the road? To get to the other command!";
+      return "Hehe, tell me more~ I love chatting with you!";
+    }
+
+    // ===== Reaction Effect =====
+    function addReaction(el) {
+      el.classList.add("scale-125");
+      setTimeout(() => el.classList.remove("scale-125"), 200);
     }
 
     // ===== Mention Feature =====
@@ -384,7 +416,6 @@
       const input = e.target;
       const cursorPos = input.selectionStart;
       const textBefore = input.value.substring(0, cursorPos);
-      // If "@" is detected, show dropdown
       if (textBefore.includes("@")) {
         const lastAt = textBefore.lastIndexOf("@");
         const query = textBefore.substring(lastAt + 1);
@@ -412,7 +443,6 @@
         dropdown.appendChild(div);
       });
       dropdown.classList.remove("hidden");
-      // Position the dropdown just above the input
       const inputRect = document.getElementById("messageInput").getBoundingClientRect();
       dropdown.style.top = (inputRect.top - 60) + "px";
       dropdown.style.left = inputRect.left + "px";
@@ -425,7 +455,6 @@
     function selectMention(name, atIndex) {
       const input = document.getElementById("messageInput");
       const text = input.value;
-      // Replace text from last "@" to cursor with the chosen name prefixed by "@"
       const newText = text.substring(0, atIndex) + "@" + name + " " + text.substring(input.selectionStart);
       input.value = newText;
       hideMentionDropdown();
@@ -436,13 +465,11 @@
     function loadFriends() {
       const friendsList = document.getElementById("friendsList");
       friendsList.innerHTML = "";
-      // My profile at top
       friendsList.innerHTML += `
         <div class="flex items-center gap-3 p-2 bg-gray-700 rounded cursor-pointer" onclick="showProfile('self','self')">
           <img src="${myProfile.avatar}" class="w-10 h-10 rounded-full">
           <span class="font-semibold">${myProfile.name}</span>
         </div>`;
-      // List each friend
       for (let key in friends) {
         let friend = friends[key];
         friendsList.innerHTML += `
@@ -461,11 +488,12 @@
         name: name,
         avatar: "default-avatar.png",
         banner: "default-banner.png",
+        status: "Online",
         bio: "New friend: " + name
       };
       friendInput.value = "";
       loadFriends();
-      alert("Friend request sent to " + name + " (fake request)!");
+      showToast("Friend request sent!");
     }
 
     // ===== Profile Modal =====
@@ -475,7 +503,6 @@
         profile = myProfile;
       } else {
         profile = bots[key] || friends[key];
-        // Reset notification if viewing a bot's profile
         if (bots[key]) {
           dmNotifications[key] = 0;
           updateBadge(key);
@@ -484,14 +511,13 @@
       document.getElementById("modalBanner").src = profile.banner;
       document.getElementById("modalAvatar").src = profile.avatar;
       document.getElementById("modalName").textContent = profile.name;
+      document.getElementById("modalStatus").textContent = "Status: " + (profile.status || "Offline");
       document.getElementById("modalBio").textContent = profile.bio;
       document.getElementById("profileModal").classList.remove("hidden");
     }
 
     function sendFriendRequest() {
-      // Simulate a friend request by alerting and optionally adding to friends list.
-      alert("Friend request sent!");
-      // Optionally, you can add logic here to update the friends list.
+      showToast("Friend request sent!");
     }
 
     // ===== Settings Modal =====
@@ -499,6 +525,7 @@
       document.getElementById("settingAvatar").value = myProfile.avatar;
       document.getElementById("settingBanner").value = myProfile.banner;
       document.getElementById("settingUsername").value = myProfile.name;
+      document.getElementById("settingStatus").value = myProfile.status;
       document.getElementById("settingBio").value = myProfile.bio;
       document.getElementById("settingsModal").classList.remove("hidden");
     }
@@ -507,17 +534,19 @@
       const avatar = document.getElementById("settingAvatar").value.trim();
       const banner = document.getElementById("settingBanner").value.trim();
       const username = document.getElementById("settingUsername").value.trim();
+      const status = document.getElementById("settingStatus").value.trim();
       const bio = document.getElementById("settingBio").value.trim();
       if (username) myProfile.name = username;
       if (avatar) myProfile.avatar = avatar;
       if (banner) myProfile.banner = banner;
+      if (status) myProfile.status = status;
       if (bio) myProfile.bio = bio;
       document.getElementById("settingsModal").classList.add("hidden");
       loadFriends();
-      // If currently chatting with self, update header
       if (currentChat === "self") {
         document.getElementById("currentChatAvatar").src = myProfile.avatar;
         document.getElementById("channelTitle").textContent = "DM - " + myProfile.name;
+        document.getElementById("channelStatus").textContent = "Status: " + myProfile.status;
       }
     }
 
@@ -526,11 +555,20 @@
       document.getElementById(modalId).classList.add("hidden");
     }
 
-    // ===== Theme Toggle (Improved) =====
+    // ===== Toast Notification =====
+    function showToast(message) {
+      const toast = document.getElementById("toast");
+      toast.textContent = message;
+      toast.classList.add("show");
+      setTimeout(() => {
+        toast.classList.remove("show");
+      }, 2000);
+    }
+
+    // ===== Theme Toggle =====
     function toggleTheme() {
       const body = document.body;
       if (body.classList.contains("bg-gray-900")) {
-        // Switch to light mode
         body.classList.remove("bg-gray-900", "text-white");
         body.classList.add("bg-white", "text-black");
         document.getElementById("themeBtn").textContent = "Dark Mode";
