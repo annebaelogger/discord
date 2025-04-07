@@ -10,25 +10,51 @@
       cursor: pointer;
       transition: transform 0.2s;
     }
-    .reaction:hover {
-      transform: scale(1.25);
+    .reaction:hover { transform: scale(1.25); }
+    .modal-bg { background: rgba(0, 0, 0, 0.6); }
+    /* Mention dropdown styling */
+    .mention-dropdown {
+      position: absolute;
+      background: #1f2937;
+      border: 1px solid #374151;
+      border-radius: 0.25rem;
+      z-index: 100;
+      width: 200px;
     }
-    /* Modal backdrop styling */
-    .modal-bg { 
-      background: rgba(0, 0, 0, 0.6);
+    .mention-item {
+      padding: 0.5rem;
+      cursor: pointer;
+    }
+    .mention-item:hover {
+      background: #374151;
+    }
+    /* Message with mention glow */
+    .mention-glow {
+      box-shadow: 0 0 8px 2px yellow;
     }
   </style>
 </head>
 <body class="bg-gray-900 text-white h-screen overflow-hidden">
   <!-- Main Container -->
   <div class="flex h-full">
-
-    <!-- Sidebar (Servers) -->
-    <div class="bg-gray-800 w-16 flex flex-col items-center py-4 space-y-4">
-      <button onclick="switchServer('anne')" class="bg-pink-500 w-12 h-12 rounded-full text-white font-bold">A</button>
-      <button onclick="switchServer('clyde')" class="bg-blue-500 w-12 h-12 rounded-full text-white font-bold">C</button>
-      <button onclick="switchServer('dollie')" class="bg-purple-500 w-12 h-12 rounded-full text-white font-bold">D</button>
-      <button class="bg-gray-700 w-12 h-12 rounded-full text-xl flex items-center justify-center">+</button>
+    <!-- Sidebar: Top portion for DMs, bottom for Servers -->
+    <div class="bg-gray-800 w-20 flex flex-col justify-between py-4">
+      <div>
+        <h3 class="text-center text-xs uppercase tracking-wide mb-2">DMs</h3>
+        <div id="dmSection" class="flex flex-col space-y-4">
+          <!-- DM icons injected by JS -->
+        </div>
+      </div>
+      <div>
+        <hr class="border-gray-600 my-2" />
+        <h3 class="text-center text-xs uppercase tracking-wide mb-2">Servers</h3>
+        <div id="serverSection" class="flex flex-col items-center space-y-4">
+          <button onclick="switchServer('anne')" class="bg-pink-500 w-12 h-12 rounded-full text-white font-bold">A</button>
+          <button onclick="switchServer('clyde')" class="bg-blue-500 w-12 h-12 rounded-full text-white font-bold">C</button>
+          <button onclick="switchServer('dollie')" class="bg-purple-500 w-12 h-12 rounded-full text-white font-bold">D</button>
+          <button class="bg-gray-700 w-12 h-12 rounded-full text-xl flex items-center justify-center">+</button>
+        </div>
+      </div>
     </div>
 
     <!-- Main Panel -->
@@ -40,38 +66,41 @@
           <button onclick="showTab('friends')" id="friendsTabBtn" class="px-3 py-1 rounded bg-gray-600 hover:bg-gray-500">Friends</button>
         </div>
         <div class="flex items-center gap-2">
-          <button onclick="toggleTheme()" class="px-3 py-1 rounded bg-gray-600 hover:bg-gray-500">Toggle Theme</button>
+          <button onclick="toggleTheme()" id="themeBtn" class="px-3 py-1 rounded bg-gray-600 hover:bg-gray-500">Toggle Theme</button>
           <button onclick="openSettings()" class="px-3 py-1 rounded bg-green-500 hover:bg-green-400">Settings</button>
         </div>
       </div>
 
       <!-- Content Area -->
       <div class="flex-1 relative overflow-hidden">
-        <!-- Chat Tab -->
+        <!-- Chat View -->
         <div id="chatView" class="absolute inset-0 flex flex-col">
           <!-- Chat Header -->
           <div class="bg-gray-800 p-4 flex items-center gap-3">
             <img id="currentChatAvatar" src="default-avatar.png" alt="Chat Avatar" class="w-10 h-10 rounded-full cursor-pointer" onclick="showProfile(currentChat, 'bot')">
             <h2 id="channelTitle" class="text-xl font-bold">DM - Anne</h2>
+            <!-- Notification badge (if any) appears here on non-active chats -->
           </div>
           <!-- Chat Messages -->
-          <div id="chatBox" class="flex-1 overflow-y-auto p-4 space-y-4 bg-gray-900"></div>
-          <!-- Message Input -->
-          <div class="p-4 bg-gray-800 flex gap-2 items-center">
-            <input type="file" id="fileInput" class="hidden" />
+          <div id="chatBox" class="flex-1 overflow-y-auto p-4 space-y-4 bg-gray-900 relative"></div>
+          <!-- Message Input Area -->
+          <div class="p-4 bg-gray-800 flex gap-2 items-center relative">
+            <input type="file" id="fileInput" class="hidden" accept="image/*"/>
             <button onclick="document.getElementById('fileInput').click()" class="text-white">📎</button>
-            <input id="messageInput" type="text" placeholder="Message..." class="flex-1 p-2 rounded bg-gray-700 text-white outline-none" />
+            <input id="messageInput" type="text" placeholder="Message..." class="flex-1 p-2 rounded bg-gray-700 text-white outline-none" onkeyup="checkMention(event)" autocomplete="off"/>
             <button onclick="sendMessage()" class="bg-blue-500 px-4 py-1 rounded hover:bg-blue-400">Send</button>
+            <!-- Mention dropdown container -->
+            <div id="mentionDropdown" class="mention-dropdown hidden"></div>
           </div>
         </div>
 
-        <!-- Friends Tab -->
+        <!-- Friends View -->
         <div id="friendsView" class="absolute inset-0 hidden flex-col">
           <div class="bg-gray-800 p-4">
             <h2 class="text-xl font-bold">Friends</h2>
           </div>
           <div id="friendsList" class="flex-1 overflow-y-auto p-4 space-y-4 bg-gray-900">
-            <!-- Friend items will be injected here -->
+            <!-- Friends list injected by JS -->
           </div>
           <div class="p-4 bg-gray-800">
             <input id="addFriendInput" type="text" placeholder="Add friend by username" class="w-full p-2 rounded bg-gray-700 text-white outline-none" />
@@ -93,7 +122,7 @@
           <p id="modalBio" class="text-sm text-gray-400"></p>
         </div>
       </div>
-      <button class="mt-4 bg-green-500 w-full py-2 rounded hover:bg-green-400">Send Friend Request</button>
+      <button onclick="sendFriendRequest()" class="mt-4 bg-green-500 w-full py-2 rounded hover:bg-green-400">Send Friend Request</button>
     </div>
   </div>
 
@@ -110,7 +139,7 @@
   </div>
 
   <script>
-    // Global Profiles:
+    // ===== Global Data Structures =====
     let myProfile = {
       name: "Myself",
       avatar: "default-avatar.png",
@@ -123,131 +152,143 @@
         name: "Anne",
         avatar: "default-avatar.png",
         banner: "default-banner.png",
-        bio: "Your kawaii bunny bot 💖. Ask me anything!"
+        bio: "Your kawaii bunny bot 💖. Ask me anything!",
+        notifications: 0
       },
       clyde: {
         name: "Clyde",
         avatar: "default-avatar.png",
         banner: "default-banner.png",
-        bio: "I'm silent but deadly 🤖."
+        bio: "I'm silent but deadly 🤖.",
+        notifications: 0
       },
       dollie: {
         name: "Dollie",
         avatar: "default-avatar.png",
         banner: "default-banner.png",
-        bio: "Creepy cute and full of surprises 🖤."
+        bio: "Creepy cute and full of surprises 🖤.",
+        notifications: 0
       }
     };
 
-    // Fake friends list starts with the bots
+    // Friends list (starts with bots; can add more)
     let friends = { ...bots };
 
-    // Current chat partner key ("anne", "clyde", "dollie") – default to anne.
+    // Notification counts for DM icons (for non-active chats)
+    let dmNotifications = {
+      anne: 0,
+      clyde: 0,
+      dollie: 0
+    };
+
+    // Current chat partner key ("anne", "clyde", "dollie", or "self")
     let currentChat = "anne";
 
-    // Currently active tab ("chat" or "friends")
+    // Active tab ("chat" or "friends")
     let activeTab = "chat";
 
-    // Initialize app by loading chat view and friends list
+    // Mention data: all possible names (bots + myProfile + friends)
+    function getMentionCandidates() {
+      const candidates = [];
+      // Add bots
+      for (let key in bots) { candidates.push({key, name: bots[key].name}); }
+      // Add my profile
+      candidates.push({key: "self", name: myProfile.name});
+      // Add any additional friends
+      for (let key in friends) {
+        if (!bots[key]) { candidates.push({key, name: friends[key].name}); }
+      }
+      return candidates;
+    }
+
+    // ===== Initialization =====
     window.onload = function() {
       showTab("chat");
       loadChat();
       loadFriends();
+      loadDMIcons();
     };
 
-    // Switch between Chat and Friends tabs
+    // ===== Sidebar DM Icons =====
+    function loadDMIcons() {
+      const dmSection = document.getElementById("dmSection");
+      dmSection.innerHTML = "";
+      // Only show bots as DM icons
+      for (let key in bots) {
+        const bot = bots[key];
+        let badge = "";
+        if (dmNotifications[key] > 0) {
+          badge = `<span id="badge-${key}" class="absolute top-0 right-0 bg-red-600 rounded-full text-xs w-5 h-5 flex items-center justify-center">${dmNotifications[key]}</span>`;
+        }
+        dmSection.innerHTML += `
+          <div class="relative">
+            <button onclick="openDM('${key}')" class="w-12 h-12 rounded-full overflow-hidden">
+              <img src="${bot.avatar}" class="w-full h-full">
+            </button>
+            ${badge}
+          </div>
+        `;
+      }
+    }
+
+    function openDM(userKey) {
+      // Reset notifications for that DM
+      dmNotifications[userKey] = 0;
+      updateBadge(userKey);
+      // Switch chat partner
+      switchServer(userKey);
+    }
+
+    function updateBadge(userKey) {
+      const badgeEl = document.getElementById("badge-" + userKey);
+      if (badgeEl) {
+        badgeEl.remove();
+      }
+    }
+
+    // ===== Tab Switching =====
     function showTab(tab) {
       activeTab = tab;
       document.getElementById("chatView").classList.toggle("hidden", tab !== "chat");
       document.getElementById("friendsView").classList.toggle("hidden", tab !== "friends");
-      // Update tab button styling
       document.getElementById("chatTabBtn").classList.toggle("bg-blue-500", tab === "chat");
       document.getElementById("chatTabBtn").classList.toggle("bg-gray-600", tab !== "chat");
       document.getElementById("friendsTabBtn").classList.toggle("bg-blue-500", tab === "friends");
       document.getElementById("friendsTabBtn").classList.toggle("bg-gray-600", tab !== "friends");
     }
 
-    // Switch server (chat partner) based on sidebar click
+    // ===== Server (Chat Partner) Switching =====
     function switchServer(userKey) {
       if (bots[userKey]) {
         currentChat = userKey;
         document.getElementById("channelTitle").textContent = "DM - " + bots[userKey].name;
         document.getElementById("currentChatAvatar").src = bots[userKey].avatar;
-        loadChat();
+      } else if (userKey === "self") {
+        currentChat = "self";
+        document.getElementById("channelTitle").textContent = "DM - " + myProfile.name;
+        document.getElementById("currentChatAvatar").src = myProfile.avatar;
       }
+      loadChat();
+      loadDMIcons();
     }
 
-    // Load initial chat message for the current chat partner
+    // ===== Chat Messages =====
     function loadChat() {
       const chatBox = document.getElementById("chatBox");
-      chatBox.innerHTML = ""; // clear messages
-      const bot = bots[currentChat];
-      const time = new Date().toLocaleTimeString([], {hour: '2-digit', minute:'2-digit'});
-      chatBox.innerHTML += `
-        <div class="flex items-start gap-3">
-          <img src="${bot.avatar}" class="w-10 h-10 rounded-full cursor-pointer" onclick="showProfile('${currentChat}', 'bot')">
-          <div>
-            <div class="flex items-center gap-2">
-              <span class="font-semibold">${bot.name}</span>
-              <span class="text-xs text-gray-400">${time}</span>
-            </div>
-            <p>Hello! I'm ${bot.name}. Let's chat!</p>
-            <div class="flex gap-2 mt-1">
-              <span class="reaction" onclick="addReaction(this)">👍</span>
-              <span class="reaction" onclick="addReaction(this)">❤️</span>
-              <span class="reaction" onclick="addReaction(this)">😂</span>
-            </div>
-          </div>
-        </div>`;
-      chatBox.scrollTop = chatBox.scrollHeight;
-    }
-
-    // Send message (with optional file attachment)
-    function sendMessage() {
-      const messageInput = document.getElementById("messageInput");
-      const fileInput = document.getElementById("fileInput");
-      const chatBox = document.getElementById("chatBox");
-      const message = messageInput.value.trim();
-      const time = new Date().toLocaleTimeString([], {hour: '2-digit', minute:'2-digit'});
-      if (!message && fileInput.files.length === 0) return;
-
-      let msgHTML = `
-        <div class="flex items-start gap-3">
-          <img src="${myProfile.avatar}" class="w-10 h-10 rounded-full cursor-pointer" onclick="showProfile('self', 'self')">
-          <div>
-            <div class="flex items-center gap-2">
-              <span class="font-semibold">${myProfile.name}</span>
-              <span class="text-xs text-gray-400">${time}</span>
-            </div>
-            <p>${message}</p>`;
-      if (fileInput.files.length > 0) {
-        const imgURL = URL.createObjectURL(fileInput.files[0]);
-        msgHTML += `<img src="${imgURL}" class="mt-2 max-w-xs rounded" />`;
-        fileInput.value = "";
-      }
-      msgHTML += `<div class="flex gap-2 mt-1">
-                    <span class="reaction" onclick="addReaction(this)">👍</span>
-                    <span class="reaction" onclick="addReaction(this)">❤️</span>
-                    <span class="reaction" onclick="addReaction(this)">😂</span>
-                  </div>
-          </div>
-        </div>`;
-      chatBox.innerHTML += msgHTML;
-      messageInput.value = "";
-      chatBox.scrollTop = chatBox.scrollHeight;
-
-      // Bot reply after a short delay
-      setTimeout(() => {
-        const botReply = getBotReply(message);
-        const replyHTML = `
+      chatBox.innerHTML = "";
+      // If currentChat is a bot, load a welcome message
+      if (bots[currentChat]) {
+        const bot = bots[currentChat];
+        const time = new Date().toLocaleTimeString([], {hour: '2-digit', minute:'2-digit'});
+        chatBox.innerHTML += `
           <div class="flex items-start gap-3">
-            <img src="${bots[currentChat].avatar}" class="w-10 h-10 rounded-full cursor-pointer" onclick="showProfile('${currentChat}', 'bot')">
+            <img src="${bot.avatar}" class="w-10 h-10 rounded-full cursor-pointer" onclick="showProfile('${currentChat}','bot')">
             <div>
               <div class="flex items-center gap-2">
-                <span class="font-semibold">${bots[currentChat].name}</span>
-                <span class="text-xs text-gray-400">${new Date().toLocaleTimeString([], {hour: '2-digit', minute:'2-digit'})}</span>
+                <span class="font-semibold">${bot.name}</span>
+                <span class="text-xs text-gray-400">${time}</span>
               </div>
-              <p>${botReply}</p>
+              <p>Hello! I'm ${bot.name}. Let's chat!</p>
               <div class="flex gap-2 mt-1">
                 <span class="reaction" onclick="addReaction(this)">👍</span>
                 <span class="reaction" onclick="addReaction(this)">❤️</span>
@@ -255,12 +296,80 @@
               </div>
             </div>
           </div>`;
-        chatBox.innerHTML += replyHTML;
-        chatBox.scrollTop = chatBox.scrollHeight;
-      }, 1000);
+      }
+      chatBox.scrollTop = chatBox.scrollHeight;
     }
 
-    // Generate a bot reply based on user message content
+    function sendMessage() {
+      const messageInput = document.getElementById("messageInput");
+      const fileInput = document.getElementById("fileInput");
+      const chatBox = document.getElementById("chatBox");
+      let message = messageInput.value.trim();
+      const time = new Date().toLocaleTimeString([], {hour: '2-digit', minute:'2-digit'});
+      // Check for file attachment
+      let fileHTML = "";
+      if (fileInput.files.length > 0) {
+        const imgURL = URL.createObjectURL(fileInput.files[0]);
+        fileHTML = `<img src="${imgURL}" class="mt-2 max-w-xs rounded" />`;
+        fileInput.value = "";
+      }
+      // If mention exists in message, add a yellow glow class
+      const hasMention = message.includes("@");
+      const mentionClass = hasMention ? "mention-glow" : "";
+      if (!message && !fileHTML) return;
+      const msgHTML = `
+        <div class="flex items-start gap-3 ${mentionClass}">
+          <img src="${myProfile.avatar}" class="w-10 h-10 rounded-full cursor-pointer" onclick="showProfile('self','self')">
+          <div>
+            <div class="flex items-center gap-2">
+              <span class="font-semibold">${myProfile.name}</span>
+              <span class="text-xs text-gray-400">${time}</span>
+            </div>
+            <p>${message}</p>
+            ${fileHTML}
+            <div class="flex gap-2 mt-1">
+              <span class="reaction" onclick="addReaction(this)">👍</span>
+              <span class="reaction" onclick="addReaction(this)">❤️</span>
+              <span class="reaction" onclick="addReaction(this)">😂</span>
+            </div>
+          </div>
+        </div>`;
+      chatBox.innerHTML += msgHTML;
+      messageInput.value = "";
+      chatBox.scrollTop = chatBox.scrollHeight;
+
+      // Bot reply if chatting with a bot
+      if (bots[currentChat]) {
+        setTimeout(() => {
+          const botReply = getBotReply(message);
+          const replyTime = new Date().toLocaleTimeString([], {hour: '2-digit', minute:'2-digit'});
+          const replyHTML = `
+            <div class="flex items-start gap-3">
+              <img src="${bots[currentChat].avatar}" class="w-10 h-10 rounded-full cursor-pointer" onclick="showProfile('${currentChat}','bot')">
+              <div>
+                <div class="flex items-center gap-2">
+                  <span class="font-semibold">${bots[currentChat].name}</span>
+                  <span class="text-xs text-gray-400">${replyTime}</span>
+                </div>
+                <p>${botReply}</p>
+                <div class="flex gap-2 mt-1">
+                  <span class="reaction" onclick="addReaction(this)">👍</span>
+                  <span class="reaction" onclick="addReaction(this)">❤️</span>
+                  <span class="reaction" onclick="addReaction(this)">😂</span>
+                </div>
+              </div>
+            </div>`;
+          chatBox.innerHTML += replyHTML;
+          chatBox.scrollTop = chatBox.scrollHeight;
+          // If user is not actively in this DM, update notification count.
+          if (currentChat !== Object.keys(bots).find(key => key === currentChat)) {
+            dmNotifications[currentChat] = (dmNotifications[currentChat] || 0) + 1;
+            loadDMIcons();
+          }
+        }, 1000);
+      }
+    }
+
     function getBotReply(userMessage) {
       const lower = userMessage.toLowerCase();
       if (lower.includes("hello")) return "Hiii~ 💕";
@@ -270,31 +379,70 @@
       return "Hehe, tell me more~";
     }
 
-    // Add reaction effect (simple animation)
-    function addReaction(el) {
-      el.classList.add("scale-125");
-      setTimeout(() => el.classList.remove("scale-125"), 200);
+    // ===== Mention Feature =====
+    function checkMention(e) {
+      const input = e.target;
+      const cursorPos = input.selectionStart;
+      const textBefore = input.value.substring(0, cursorPos);
+      // If "@" is detected, show dropdown
+      if (textBefore.includes("@")) {
+        const lastAt = textBefore.lastIndexOf("@");
+        const query = textBefore.substring(lastAt + 1);
+        const candidates = getMentionCandidates().filter(c => c.name.toLowerCase().startsWith(query.toLowerCase()));
+        showMentionDropdown(candidates, lastAt);
+      } else {
+        hideMentionDropdown();
+      }
     }
 
-    // Toggle light/dark mode by toggling a class on the body element
-    function toggleTheme() {
-      document.body.classList.toggle("bg-gray-900");
-      document.body.classList.toggle("bg-white");
-      document.body.classList.toggle("text-white");
-      document.body.classList.toggle("text-black");
+    function showMentionDropdown(candidates, atIndex) {
+      const dropdown = document.getElementById("mentionDropdown");
+      if (candidates.length === 0) {
+        hideMentionDropdown();
+        return;
+      }
+      dropdown.innerHTML = "";
+      candidates.forEach(candidate => {
+        const div = document.createElement("div");
+        div.className = "mention-item";
+        div.textContent = candidate.name;
+        div.onclick = function() {
+          selectMention(candidate.name, atIndex);
+        };
+        dropdown.appendChild(div);
+      });
+      dropdown.classList.remove("hidden");
+      // Position the dropdown just above the input
+      const inputRect = document.getElementById("messageInput").getBoundingClientRect();
+      dropdown.style.top = (inputRect.top - 60) + "px";
+      dropdown.style.left = inputRect.left + "px";
     }
 
-    // Load Friends list (from bots and any added friends)
+    function hideMentionDropdown() {
+      document.getElementById("mentionDropdown").classList.add("hidden");
+    }
+
+    function selectMention(name, atIndex) {
+      const input = document.getElementById("messageInput");
+      const text = input.value;
+      // Replace text from last "@" to cursor with the chosen name prefixed by "@"
+      const newText = text.substring(0, atIndex) + "@" + name + " " + text.substring(input.selectionStart);
+      input.value = newText;
+      hideMentionDropdown();
+      input.focus();
+    }
+
+    // ===== Friends List =====
     function loadFriends() {
       const friendsList = document.getElementById("friendsList");
       friendsList.innerHTML = "";
-      // List my own profile at the top
+      // My profile at top
       friendsList.innerHTML += `
         <div class="flex items-center gap-3 p-2 bg-gray-700 rounded cursor-pointer" onclick="showProfile('self','self')">
           <img src="${myProfile.avatar}" class="w-10 h-10 rounded-full">
           <span class="font-semibold">${myProfile.name}</span>
         </div>`;
-      // List all friends (bots and added ones)
+      // List each friend
       for (let key in friends) {
         let friend = friends[key];
         friendsList.innerHTML += `
@@ -305,12 +453,10 @@
       }
     }
 
-    // Add friend via the input field (for demo, just adds to friends list)
     function addFriend() {
       const friendInput = document.getElementById("addFriendInput");
       const name = friendInput.value.trim();
       if (!name) return;
-      // For demo, add friend with default images and a basic bio.
       friends[name.toLowerCase()] = {
         name: name,
         avatar: "default-avatar.png",
@@ -322,14 +468,18 @@
       alert("Friend request sent to " + name + " (fake request)!");
     }
 
-    // Show Profile modal for either self or a bot/friend.
-    // type: "self" for myProfile, "bot" for others.
+    // ===== Profile Modal =====
     function showProfile(key, type) {
       let profile;
       if (type === "self") {
         profile = myProfile;
       } else {
         profile = bots[key] || friends[key];
+        // Reset notification if viewing a bot's profile
+        if (bots[key]) {
+          dmNotifications[key] = 0;
+          updateBadge(key);
+        }
       }
       document.getElementById("modalBanner").src = profile.banner;
       document.getElementById("modalAvatar").src = profile.avatar;
@@ -338,14 +488,14 @@
       document.getElementById("profileModal").classList.remove("hidden");
     }
 
-    // Close modal (for both profile and settings) when clicking outside the content area.
-    function closeModal(modalId) {
-      document.getElementById(modalId).classList.add("hidden");
+    function sendFriendRequest() {
+      // Simulate a friend request by alerting and optionally adding to friends list.
+      alert("Friend request sent!");
+      // Optionally, you can add logic here to update the friends list.
     }
 
-    // Open Settings modal to edit my profile.
+    // ===== Settings Modal =====
     function openSettings() {
-      // Pre-fill current values
       document.getElementById("settingAvatar").value = myProfile.avatar;
       document.getElementById("settingBanner").value = myProfile.banner;
       document.getElementById("settingUsername").value = myProfile.name;
@@ -353,7 +503,6 @@
       document.getElementById("settingsModal").classList.remove("hidden");
     }
 
-    // Save settings from the Settings modal and update my profile.
     function saveSettings() {
       const avatar = document.getElementById("settingAvatar").value.trim();
       const banner = document.getElementById("settingBanner").value.trim();
@@ -365,10 +514,30 @@
       if (bio) myProfile.bio = bio;
       document.getElementById("settingsModal").classList.add("hidden");
       loadFriends();
-      // If currently chatting with self, update chat header avatar/name.
+      // If currently chatting with self, update header
       if (currentChat === "self") {
         document.getElementById("currentChatAvatar").src = myProfile.avatar;
         document.getElementById("channelTitle").textContent = "DM - " + myProfile.name;
+      }
+    }
+
+    // ===== Modal Close =====
+    function closeModal(modalId) {
+      document.getElementById(modalId).classList.add("hidden");
+    }
+
+    // ===== Theme Toggle (Improved) =====
+    function toggleTheme() {
+      const body = document.body;
+      if (body.classList.contains("bg-gray-900")) {
+        // Switch to light mode
+        body.classList.remove("bg-gray-900", "text-white");
+        body.classList.add("bg-white", "text-black");
+        document.getElementById("themeBtn").textContent = "Dark Mode";
+      } else {
+        body.classList.remove("bg-white", "text-black");
+        body.classList.add("bg-gray-900", "text-white");
+        document.getElementById("themeBtn").textContent = "Light Mode";
       }
     }
   </script>
