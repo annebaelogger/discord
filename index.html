@@ -1,335 +1,101 @@
-<!DOCTYPE html>
-<html lang="en">
-<head>
-  <meta charset="UTF-8" />
-  <title>Fake Discord | Chat with Anne</title>
-  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-  <style>
-    :root {
-      --bg: #2f3136;
-      --sidebar: #202225;
-      --topbar: #36393f;
-      --input: #40444b;
-      --text: white;
-      --accent: #7289da;
-      --pink: #ff7ab8;
-    }
+import React, { useState } from "react";
+import { Card, CardContent } from "@/components/ui/card";
+import { Button } from "@/components/ui/button";
+import { Input } from "@/components/ui/input";
 
-    [data-theme="light"] {
-      --bg: #f3f3f3;
-      --sidebar: #ddd;
-      --topbar: #ccc;
-      --input: #e5e5e5;
-      --text: #111;
-    }
+export default function FakeDiscordApp() {
+  const [theme, setTheme] = useState("dark");
+  const [user, setUser] = useState({ name: "You", avatar: "/Profile.width-500.png", bio: "Just a chill person." });
+  const [message, setMessage] = useState("");
+  const [messages, setMessages] = useState([{ from: "Anne", text: "Hey cutie!~ <3" }]);
 
-    * { box-sizing: border-box; }
+  const sendMessage = () => {
+    if (!message.trim()) return;
+    setMessages([...messages, { from: user.name, text: message }]);
+    setMessage("");
+  };
 
-    body {
-      margin: 0;
-      font-family: 'Segoe UI', sans-serif;
-      background-color: var(--bg);
-      color: var(--text);
-      transition: background 0.4s, color 0.4s;
-    }
-
-    .app {
-      display: flex;
-      height: 100vh;
-    }
-
-    .sidebar {
-      width: 260px;
-      background-color: var(--sidebar);
-      padding: 10px;
-      overflow-y: auto;
-    }
-
-    .friend {
-      display: flex;
-      align-items: center;
-      padding: 10px;
-      margin-bottom: 5px;
-      border-radius: 8px;
-      cursor: pointer;
-    }
-
-    .friend:hover {
-      background-color: var(--bg);
-    }
-
-    .friend img {
-      border-radius: 50%;
-      width: 36px;
-      height: 36px;
-      margin-right: 10px;
-    }
-
-    .chat-section {
-      flex: 1;
-      display: flex;
-      flex-direction: column;
-    }
-
-    .topbar {
-      background-color: var(--topbar);
-      padding: 10px 20px;
-      display: flex;
-      justify-content: space-between;
-      align-items: center;
-    }
-
-    .chat-box {
-      flex: 1;
-      padding: 20px;
-      overflow-y: auto;
-    }
-
-    .message {
-      margin: 10px 0;
-      padding: 10px;
-      border-radius: 10px;
-      max-width: 70%;
-    }
-
-    .message.user {
-      background-color: var(--accent);
-      align-self: flex-end;
-      text-align: right;
-    }
-
-    .message.anne {
-      background-color: var(--pink);
-      align-self: flex-start;
-    }
-
-    .input-area {
-      display: flex;
-      padding: 15px;
-      background-color: var(--input);
-    }
-
-    .input-area input[type="text"] {
-      flex: 1;
-      padding: 10px;
-      border-radius: 8px;
-      border: none;
-      font-size: 16px;
-    }
-
-    .input-area button {
-      margin-left: 10px;
-      padding: 10px 16px;
-      border: none;
-      background-color: var(--accent);
-      color: white;
-      border-radius: 8px;
-      cursor: pointer;
-    }
-
-    .profile-modal,
-    .request-modal {
-      position: fixed;
-      top: 20%;
-      left: 50%;
-      transform: translateX(-50%);
-      width: 300px;
-      background-color: var(--sidebar);
-      border-radius: 12px;
-      box-shadow: 0 0 20px rgba(0,0,0,0.5);
-      z-index: 999;
-      display: none;
-      padding: 20px;
-      text-align: center;
-      color: var(--text);
-    }
-
-    .profile-modal img,
-    .request-modal img {
-      width: 80px;
-      height: 80px;
-      border-radius: 50%;
-      margin-bottom: 10px;
-    }
-
-    .close-btn {
-      margin-top: 10px;
-      background-color: #ff5c5c;
-      border: none;
-      padding: 8px 16px;
-      color: white;
-      border-radius: 8px;
-      cursor: pointer;
-    }
-
-    .typing {
-      font-style: italic;
-      color: gray;
-      margin: 0 0 10px 5px;
-    }
-
-    .emoji-picker {
-      position: absolute;
-      bottom: 60px;
-      right: 20px;
-      background: white;
-      padding: 8px;
-      border-radius: 10px;
-      display: none;
-      max-height: 150px;
-      overflow-y: auto;
-    }
-
-    .emoji-picker span {
-      font-size: 20px;
-      cursor: pointer;
-      margin: 5px;
-    }
-
-    .top-controls button {
-      background: none;
-      color: var(--text);
-      border: 1px solid var(--text);
-      border-radius: 6px;
-      padding: 5px 10px;
-      cursor: pointer;
-      margin-left: 5px;
-    }
-
-  </style>
-</head>
-<body data-theme="dark">
-
-  <div class="app">
-    <div class="sidebar">
-      <h3>Friends</h3>
-      <div class="friend" onclick="openProfile('Anne', 'https://i.pinimg.com/736x/3a/76/b9/3a76b9a993f5172571c2552b750a1630.jpg')">
-        <img src="https://i.pinimg.com/736x/3a/76/b9/3a76b9a993f5172571c2552b750a1630.jpg" />
-        <div>
-          <div><b>Anne</b></div>
-          <small>Online</small>
+  return (
+    <div className={`min-h-screen ${theme === "dark" ? "bg-zinc-900 text-white" : "bg-white text-black"} transition-all`}>
+      <div className="flex">
+        {/* Sidebar */}
+        <div className="w-64 bg-zinc-800 p-4 text-white">
+          <h2 className="text-xl font-bold mb-4">Fake Discord</h2>
+          <Button onClick={() => setTheme(theme === "dark" ? "light" : "dark")} className="mb-4">
+            Toggle {theme === "dark" ? "Light" : "Dark"} Mode
+          </Button>
+          <div className="space-y-2">
+            <p className="cursor-pointer hover:text-pink-400">Direct Messages</p>
+            <p className="text-pink-300">Anne 💕</p>
+            <p className="cursor-pointer hover:text-pink-400">Friend Requests</p>
+            <p className="cursor-pointer hover:text-pink-400">Settings</p>
+          </div>
         </div>
-      </div>
-      <div class="friend" onclick="openFriendRequest()">
-        <img src="https://cdn.discordapp.com/embed/avatars/1.png" />
-        <div>
-          <div><b>mysteryUser</b></div>
-          <small>Sent you a request</small>
+
+        {/* Main Chat */}
+        <div className="flex-1 p-4 flex flex-col">
+          <div className="flex items-center mb-4">
+            <img
+              src="/1_-38R78ond4zn0jtVOXbzQA.png"
+              alt="Anne's avatar"
+              className="w-10 h-10 rounded-full mr-2 cursor-pointer"
+              title="Anne - "
+              onClick={() => alert("Anne: I'm always here for you~ 💖")}
+            />
+            <h2 className="text-lg font-semibold">Anne</h2>
+          </div>
+
+          <Card className="flex-1 mb-4 overflow-y-auto">
+            <CardContent className="space-y-2 p-4">
+              {messages.map((msg, i) => (
+                <div key={i} className="flex items-start gap-2">
+                  <strong>{msg.from}</strong>: <span>{msg.text}</span>
+                </div>
+              ))}
+              <em>Anne is typing...</em>
+            </CardContent>
+          </Card>
+
+          <div className="flex gap-2">
+            <Input
+              placeholder="Send a message to Anne..."
+              value={message}
+              onChange={(e) => setMessage(e.target.value)}
+              onKeyDown={(e) => e.key === "Enter" && sendMessage()}
+            />
+            <Button onClick={sendMessage}>Send</Button>
+          </div>
+        </div>
+
+        {/* Settings */}
+        <div className="w-80 bg-zinc-700 p-4 text-white">
+          <h3 className="text-lg mb-2">Settings</h3>
+          <Input
+            placeholder="Change Name"
+            className="mb-2"
+            value={user.name}
+            onChange={(e) => setUser({ ...user, name: e.target.value })}
+          />
+          <Input
+            placeholder="Change Bio"
+            className="mb-2"
+            value={user.bio}
+            onChange={(e) => setUser({ ...user, bio: e.target.value })}
+          />
+          <Input
+            placeholder="Change Avatar URL"
+            className="mb-2"
+            value={user.avatar}
+            onChange={(e) => setUser({ ...user, avatar: e.target.value })}
+          />
+          <div className="mt-4">
+            <p className="font-bold">Preview:</p>
+            <img src={user.avatar} alt="Your avatar" className="w-12 h-12 rounded-full mb-1" />
+            <p>{user.name}</p>
+            <p className="text-sm text-gray-300">{user.bio}</p>
+          </div>
         </div>
       </div>
     </div>
-
-    <div class="chat-section">
-      <div class="topbar">
-        <div>Chatting with Anne</div>
-        <div class="top-controls">
-          <button onclick="toggleTheme()">🌙/☀️</button>
-          <button onclick="toggleEmoji()">😊</button>
-        </div>
-      </div>
-      <div class="chat-box" id="chatBox">
-        <div class="message anne">Hey! I'm Anne 💖</div>
-        <div class="typing" id="typing" style="display: none;">Anne is typing...</div>
-      </div>
-      <div class="input-area">
-        <input type="text" id="msgInput" placeholder="Say something..." />
-        <button onclick="sendMsg()">Send</button>
-      </div>
-    </div>
-  </div>
-
-  <!-- Emoji Picker -->
-  <div class="emoji-picker" id="emojiPicker">
-    😊 😂 😭 😍 🤩 😎 😡 💀 👀 🤭 🙃 🐸 🌸 💖
-  </div>
-
-  <!-- Profile Modal -->
-  <div class="profile-modal" id="profileModal">
-    <img id="profileImg" src="" />
-    <h3 id="profileName">Username</h3>
-    <p>#1234</p>
-    <p>Mutual friends and servers hidden ✨</p>
-    <button class="close-btn" onclick="closeProfile()">Close</button>
-  </div>
-
-  <!-- Friend Request Modal -->
-  <div class="request-modal" id="requestModal">
-    <img src="https://cdn.discordapp.com/embed/avatars/1.png" />
-    <h3>mysteryUser#0001</h3>
-    <p>wants to be friends 💌</p>
-    <button onclick="acceptRequest()">Accept</button>
-    <button class="close-btn" onclick="closeFriendRequest()">Decline</button>
-  </div>
-
-  <script>
-    const emojiPicker = document.getElementById("emojiPicker");
-
-    function sendMsg() {
-      const input = document.getElementById("msgInput");
-      const text = input.value.trim();
-      if (!text) return;
-
-      const chat = document.getElementById("chatBox");
-
-      const userMsg = document.createElement("div");
-      userMsg.className = "message user";
-      userMsg.innerText = text;
-      chat.appendChild(userMsg);
-      input.value = "";
-      chat.scrollTop = chat.scrollHeight;
-
-      document.getElementById("typing").style.display = "block";
-
-      setTimeout(() => {
-        const reply = document.createElement("div");
-        reply.className = "message anne";
-        reply.innerText = "OMG " + text + "?? That's adorable 💕";
-        chat.appendChild(reply);
-        document.getElementById("typing").style.display = "none";
-        chat.scrollTop = chat.scrollHeight;
-      }, 1000);
-    }
-
-    function openProfile(name, img) {
-      document.getElementById("profileModal").style.display = "block";
-      document.getElementById("profileImg").src = img;
-      document.getElementById("profileName").innerText = name;
-    }
-
-    function closeProfile() {
-      document.getElementById("profileModal").style.display = "none";
-    }
-
-    function toggleEmoji() {
-      const picker = document.getElementById("emojiPicker");
-      picker.style.display = picker.style.display === "block" ? "none" : "block";
-    }
-
-    emojiPicker.addEventListener("click", (e) => {
-      if (e.target.tagName === "SPAN" || e.target.nodeType === 3) {
-        const emoji = e.target.textContent;
-        document.getElementById("msgInput").value += emoji;
-        emojiPicker.style.display = "none";
-      }
-    });
-
-    function toggleTheme() {
-      const current = document.body.getAttribute("data-theme");
-      document.body.setAttribute("data-theme", current === "dark" ? "light" : "dark");
-    }
-
-    function openFriendRequest() {
-      document.getElementById("requestModal").style.display = "block";
-    }
-
-    function closeFriendRequest() {
-      document.getElementById("requestModal").style.display = "none";
-    }
-
-    function acceptRequest() {
-      alert("🎉 You are now friends with mysteryUser!");
-      closeFriendRequest();
-    }
-  </script>
-</body>
-</html>
+  );
+}
