@@ -1,147 +1,140 @@
-import React, { useState } from "react";
-import { createRoot } from "react-dom/client";
-import "tailwindcss/tailwind.css";
-
-const defaultUser = {
-  name: "You",
-  avatar: "/Profile.width-500.png",
-  bio: "Just a chill person."
-};
-
-const anne = {
-  name: "Anne",
-  avatar: "/1_-38R78ond4zn0jtVOXbzQA.png",
-  bio: "Always here for you~ 💖"
-};
-
-function Sidebar({ setSection }) {
-  return (
-    <div className="w-64 bg-zinc-900 text-white h-screen p-4 space-y-4">
-      <h2 className="text-xl font-bold mb-6">Fake Discord</h2>
-      <button className="hover:text-pink-400" onClick={() => setSection("chat")}>💬 Chat</button><br />
-      <button className="hover:text-pink-400" onClick={() => setSection("requests")}>👥 Friend Requests</button><br />
-      <button className="hover:text-pink-400" onClick={() => setSection("settings")}>⚙️ Settings</button>
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Fake Discord</title>
+  <script src="https://cdn.tailwindcss.com"></script>
+  <style>
+    .typing {
+      animation: blink 1s step-start infinite;
+    }
+    @keyframes blink {
+      50% { opacity: 0; }
+    }
+  </style>
+</head>
+<body class="bg-gray-900 text-white transition-colors duration-300">
+  <div class="flex h-screen">
+    <!-- Sidebar -->
+    <div class="w-64 bg-gray-800 p-4 space-y-4">
+      <h1 class="text-2xl font-bold text-purple-400">Fakecord</h1>
+      <button onclick="showTab('chat')" class="block w-full text-left">💬 Chat</button>
+      <button onclick="showTab('friends')" class="block w-full text-left">👥 Friends</button>
+      <button onclick="showTab('settings')" class="block w-full text-left">⚙️ Settings</button>
+      <button onclick="toggleTheme()" class="mt-4 block w-full text-left">🌓 Toggle Theme</button>
     </div>
-  );
-}
 
-function ChatSection({ messages, user, message, setMessage, sendMessage }) {
-  return (
-    <div className="flex-1 p-6 flex flex-col">
-      <div className="flex items-center mb-4">
-        <img src={anne.avatar} alt="avatar" className="w-10 h-10 rounded-full mr-2" />
-        <h2 className="text-lg font-semibold">{anne.name}</h2>
-      </div>
-      <div className="flex-1 overflow-y-auto bg-zinc-800 rounded-lg p-4 space-y-2">
-        {messages.map((msg, i) => (
-          <div key={i} className="flex items-start gap-2">
-            <strong>{msg.from}</strong>: <span>{msg.text}</span>
-          </div>
-        ))}
-        <em className="text-pink-300">{anne.name} is typing...</em>
-      </div>
-      <div className="mt-4 flex gap-2">
-        <input
-          className="flex-1 p-2 rounded bg-zinc-700 text-white"
-          placeholder="Message Anne..."
-          value={message}
-          onChange={(e) => setMessage(e.target.value)}
-          onKeyDown={(e) => e.key === "Enter" && sendMessage()}
-        />
-        <button onClick={sendMessage} className="bg-pink-500 hover:bg-pink-600 px-4 py-2 rounded text-white">Send</button>
-      </div>
-    </div>
-  );
-}
-
-function RequestsSection() {
-  return (
-    <div className="flex-1 p-6 text-white">
-      <h2 className="text-2xl mb-4">Friend Requests</h2>
-      <p>No friend requests at the moment 💌</p>
-    </div>
-  );
-}
-
-function SettingsSection({ user, setUser }) {
-  return (
-    <div className="flex-1 p-6 text-white space-y-4">
-      <h2 className="text-2xl">Settings</h2>
-      <div>
-        <label className="block mb-1">Username</label>
-        <input
-          className="w-full p-2 bg-zinc-800 rounded"
-          value={user.name}
-          onChange={(e) => setUser({ ...user, name: e.target.value })}
-        />
-      </div>
-      <div>
-        <label className="block mb-1">Bio</label>
-        <input
-          className="w-full p-2 bg-zinc-800 rounded"
-          value={user.bio}
-          onChange={(e) => setUser({ ...user, bio: e.target.value })}
-        />
-      </div>
-      <div>
-        <label className="block mb-1">Avatar URL</label>
-        <input
-          className="w-full p-2 bg-zinc-800 rounded"
-          value={user.avatar}
-          onChange={(e) => setUser({ ...user, avatar: e.target.value })}
-        />
-      </div>
-      <div className="mt-4">
-        <h3 className="text-lg font-semibold mb-2">Profile Preview</h3>
-        <img src={user.avatar} className="w-14 h-14 rounded-full" alt="avatar" />
-        <p className="mt-1">{user.name}</p>
-        <p className="text-sm text-gray-400">{user.bio}</p>
-      </div>
-    </div>
-  );
-}
-
-function App() {
-  const [section, setSection] = useState("chat");
-  const [theme, setTheme] = useState("dark");
-  const [user, setUser] = useState(defaultUser);
-  const [message, setMessage] = useState("");
-  const [messages, setMessages] = useState([{ from: anne.name, text: "Hey cutie!~ <3" }]);
-
-  const sendMessage = () => {
-    if (!message.trim()) return;
-    setMessages([...messages, { from: user.name, text: message }]);
-    setMessage("");
-  };
-
-  return (
-    <div className={`${theme === "dark" ? "bg-zinc-900" : "bg-white"} min-h-screen flex text-white`}>
-      <Sidebar setSection={setSection} />
-      <div className="flex-1 flex flex-col">
-        <div className="p-2 bg-zinc-800 text-right">
-          <button
-            onClick={() => setTheme(theme === "dark" ? "light" : "dark")}
-            className="bg-zinc-700 px-3 py-1 rounded"
-          >
-            Toggle {theme === "dark" ? "Light" : "Dark"} Mode
-          </button>
+    <!-- Main Content -->
+    <div class="flex-1 p-4 overflow-auto">
+      <!-- Chat Tab -->
+      <div id="chatTab">
+        <h2 class="text-xl font-bold mb-4">DM - Anne</h2>
+        <div class="flex items-center gap-2 mb-4">
+          <img src="Profile.width-500.png" class="w-10 h-10 rounded-full cursor-pointer" onclick="showProfile('Anne', 'Hi, I’m your bestie 💖')" />
+          <span class="font-semibold">Anne</span>
         </div>
-        {section === "chat" && (
-          <ChatSection
-            messages={messages}
-            user={user}
-            message={message}
-            setMessage={setMessage}
-            sendMessage={sendMessage}
-          />
-        )}
-        {section === "requests" && <RequestsSection />}
-        {section === "settings" && <SettingsSection user={user} setUser={setUser} />}
+        <div id="chat" class="space-y-2 mb-4 max-h-96 overflow-y-auto p-2 bg-gray-700 rounded">
+          <!-- Messages will go here -->
+        </div>
+        <div class="flex gap-2">
+          <input id="messageInput" type="text" class="flex-1 px-4 py-2 rounded bg-gray-600 text-white" placeholder="Say something to Anne..." />
+          <button onclick="sendMessage()" class="bg-purple-500 px-4 py-2 rounded">Send</button>
+        </div>
+      </div>
+
+      <!-- Friends Tab -->
+      <div id="friendsTab" class="hidden">
+        <h2 class="text-xl font-bold mb-4">Friend Requests</h2>
+        <p class="text-gray-400">You have no pending requests. :(</p>
+      </div>
+
+      <!-- Settings Tab -->
+      <div id="settingsTab" class="hidden">
+        <h2 class="text-xl font-bold mb-4">Settings</h2>
+        <label class="block mb-2">Username:</label>
+        <input id="usernameInput" type="text" class="w-full px-3 py-2 mb-4 rounded bg-gray-600 text-white" placeholder="Your name..." />
+        
+        <label class="block mb-2">Bio:</label>
+        <input id="bioInput" type="text" class="w-full px-3 py-2 mb-4 rounded bg-gray-600 text-white" placeholder="Write something cute..." />
+
+        <label class="block mb-2">Avatar URL:</label>
+        <input id="avatarInput" type="text" class="w-full px-3 py-2 mb-4 rounded bg-gray-600 text-white" placeholder="Paste image URL" />
+
+        <button onclick="saveSettings()" class="bg-green-500 px-4 py-2 rounded">Save</button>
       </div>
     </div>
-  );
-}
+  </div>
 
-const container = document.getElementById("root");
-const root = createRoot(container);
-root.render(<App />);
+  <!-- Profile Popup -->
+  <div id="profilePopup" class="hidden fixed top-20 left-1/2 transform -translate-x-1/2 bg-gray-800 p-4 rounded shadow-xl w-80 z-50">
+    <div class="flex justify-between items-center mb-4">
+      <h3 id="popupName" class="text-xl font-bold"></h3>
+      <button onclick="closeProfile()" class="text-red-400">✕</button>
+    </div>
+    <p id="popupBio" class="text-gray-300"></p>
+  </div>
+
+  <script>
+    function showTab(tab) {
+      document.getElementById('chatTab').classList.add('hidden');
+      document.getElementById('friendsTab').classList.add('hidden');
+      document.getElementById('settingsTab').classList.add('hidden');
+      document.getElementById(tab + 'Tab').classList.remove('hidden');
+    }
+
+    function toggleTheme() {
+      document.body.classList.toggle('bg-gray-100');
+      document.body.classList.toggle('text-black');
+      document.body.classList.toggle('bg-gray-900');
+      document.body.classList.toggle('text-white');
+    }
+
+    function sendMessage() {
+      const chat = document.getElementById('chat');
+      const input = document.getElementById('messageInput');
+      const msg = input.value.trim();
+      if (!msg) return;
+      const userMsg = `<div class="text-right"><div class="inline-block bg-purple-500 px-3 py-1 rounded">${msg}</div></div>`;
+      chat.innerHTML += userMsg;
+      input.value = '';
+      chat.scrollTop = chat.scrollHeight;
+
+      // Fake typing...
+      const typing = document.createElement('div');
+      typing.id = 'typing';
+      typing.innerHTML = `<div class="typing text-sm text-gray-400">Anne is typing...</div>`;
+      chat.appendChild(typing);
+      chat.scrollTop = chat.scrollHeight;
+
+      setTimeout(() => {
+        document.getElementById('typing').remove();
+        const anneMsg = `<div><div class="inline-block bg-gray-600 px-3 py-1 rounded">Aww, that’s cute 💕</div></div>`;
+        chat.innerHTML += anneMsg;
+        chat.scrollTop = chat.scrollHeight;
+      }, 1500);
+    }
+
+    function showProfile(name, bio) {
+      document.getElementById('popupName').innerText = name;
+      document.getElementById('popupBio').innerText = bio;
+      document.getElementById('profilePopup').classList.remove('hidden');
+    }
+
+    function closeProfile() {
+      document.getElementById('profilePopup').classList.add('hidden');
+    }
+
+    function saveSettings() {
+      const name = document.getElementById('usernameInput').value || 'You';
+      const bio = document.getElementById('bioInput').value || 'No bio yet!';
+      const avatar = document.getElementById('avatarInput').value || '1_-38R78ond4zn0jtVOXbzQA.png';
+
+      document.querySelector('#chatTab img').src = avatar;
+      document.querySelector('#chatTab span').innerText = name;
+      document.querySelector('#chatTab img').setAttribute('onclick', `showProfile("${name}", "${bio}")`);
+      alert('Settings updated!');
+    }
+  </script>
+</body>
+</html>
