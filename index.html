@@ -1,0 +1,208 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+  <title>Chat with Anne</title>
+  <style>
+    body {
+      margin: 0;
+      font-family: 'Segoe UI', sans-serif;
+      background: #1a1a1b;
+      color: #fff;
+    }
+
+    header {
+      background: #ff66b2;
+      padding: 1rem 2rem;
+      font-size: 1.5rem;
+      font-weight: bold;
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+    }
+
+    .btn {
+      background-color: #ff99cc;
+      color: white;
+      padding: 0.5rem 1rem;
+      border: none;
+      border-radius: 10px;
+      cursor: pointer;
+    }
+
+    .container {
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      margin-top: 2rem;
+    }
+
+    .chat-box {
+      width: 90%;
+      max-width: 700px;
+      background-color: #2c2f33;
+      border-radius: 12px;
+      padding: 1rem;
+      height: 500px;
+      overflow-y: auto;
+      margin-bottom: 1rem;
+    }
+
+    .message {
+      margin: 0.5rem 0;
+      padding: 0.5rem;
+      border-radius: 8px;
+      max-width: 80%;
+    }
+
+    .message.user {
+      background-color: #7289da;
+      align-self: flex-end;
+      text-align: right;
+    }
+
+    .message.anne {
+      background-color: #ff99cc;
+      align-self: flex-start;
+    }
+
+    .input-area {
+      display: flex;
+      gap: 0.5rem;
+      width: 90%;
+      max-width: 700px;
+      margin-bottom: 2rem;
+    }
+
+    .input-area input[type="text"] {
+      flex: 1;
+      padding: 0.5rem;
+      border-radius: 8px;
+      border: none;
+    }
+
+    .input-area input[type="file"] {
+      display: none;
+    }
+
+    .emoji-picker {
+      background: #40444b;
+      padding: 0.5rem;
+      border-radius: 10px;
+      margin-top: -1rem;
+      display: none;
+    }
+
+    .emoji {
+      cursor: pointer;
+      padding: 0.2rem;
+      font-size: 1.3rem;
+    }
+  </style>
+</head>
+<body>
+
+  <header>
+    Chat with Anne
+    <button class="btn" onclick="friendAnne()">Add Friend</button>
+  </header>
+
+  <div class="container">
+    <div class="chat-box" id="chatBox">
+      <div class="message anne">Hey there! I'm Anne. Wanna chat? 💖</div>
+    </div>
+
+    <div class="input-area">
+      <input type="text" id="messageInput" placeholder="Type a message..." />
+      <button class="btn" onclick="sendMessage()">Send</button>
+      <button class="btn" onclick="toggleEmojiPicker()">😊</button>
+      <button class="btn" onclick="document.getElementById('imageInput').click()">📎</button>
+      <input type="file" id="imageInput" accept="image/*" onchange="sendImage(event)" />
+    </div>
+
+    <div class="emoji-picker" id="emojiPicker">
+      <span class="emoji" onclick="addEmoji('😊')">😊</span>
+      <span class="emoji" onclick="addEmoji('😂')">😂</span>
+      <span class="emoji" onclick="addEmoji('❤️')">❤️</span>
+      <span class="emoji" onclick="addEmoji('👍')">👍</span>
+      <span class="emoji" onclick="addEmoji('🥺')">🥺</span>
+      <span class="emoji" onclick="addEmoji('🎀')">🎀</span>
+    </div>
+  </div>
+
+  <script>
+    function sendMessage() {
+      const input = document.getElementById("messageInput");
+      const text = input.value.trim();
+      if (text === "") return;
+
+      addMessage(text, "user");
+      input.value = "";
+
+      setTimeout(() => {
+        fakeReply(text);
+      }, 800);
+    }
+
+    function sendImage(event) {
+      const file = event.target.files[0];
+      if (!file) return;
+
+      const reader = new FileReader();
+      reader.onload = function(e) {
+        const img = `<img src="${e.target.result}" style="max-width: 200px; border-radius: 8px;">`;
+        addMessage(img, "user", true);
+        setTimeout(() => {
+          addMessage("Aww cute! 🥰", "anne");
+        }, 1000);
+      };
+      reader.readAsDataURL(file);
+    }
+
+    function addMessage(text, sender, isHTML = false) {
+      const chatBox = document.getElementById("chatBox");
+      const msg = document.createElement("div");
+      msg.classList.add("message", sender);
+      msg.innerHTML = isHTML ? text : escapeHtml(text);
+      chatBox.appendChild(msg);
+      chatBox.scrollTop = chatBox.scrollHeight;
+    }
+
+    function escapeHtml(text) {
+      const div = document.createElement('div');
+      div.innerText = text;
+      return div.innerHTML;
+    }
+
+    function fakeReply(userText) {
+      const replies = [
+        "That sounds cool!",
+        "Omg, no way 😱",
+        "Haha you're funny 😂",
+        "Same here 💅",
+        "Wanna be besties? 🎀",
+        "I totally get you 💖"
+      ];
+      const reply = replies[Math.floor(Math.random() * replies.length)];
+      addMessage(reply, "anne");
+    }
+
+    function addEmoji(emoji) {
+      const input = document.getElementById("messageInput");
+      input.value += emoji;
+      input.focus();
+    }
+
+    function toggleEmojiPicker() {
+      const picker = document.getElementById("emojiPicker");
+      picker.style.display = picker.style.display === "none" ? "flex" : "none";
+    }
+
+    function friendAnne() {
+      alert("You friended Anne! She's so happy 💕");
+    }
+  </script>
+
+</body>
+</html>
