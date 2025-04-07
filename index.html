@@ -55,6 +55,19 @@
     #toast.show {
       opacity: 1;
     }
+    /* Status Badge */
+    .status-badge {
+      position: absolute;
+      bottom: 0;
+      right: 0;
+      width: 0.75rem;
+      height: 0.75rem;
+      border: 2px solid white;
+      border-radius: 50%;
+    }
+    .status-online { background-color: #22c55e; }   /* Green */
+    .status-dnd { background-color: #ef4444; }        /* Red */
+    .status-idle { background-color: #eab308; }       /* Yellow */
   </style>
 </head>
 <body class="bg-gray-900 text-white h-screen overflow-hidden">
@@ -75,7 +88,7 @@
         <hr class="border-gray-600 my-2" />
         <h3 class="text-center text-xs uppercase tracking-wide mb-2">Servers</h3>
         <div id="serverSection" class="flex flex-col items-center space-y-4">
-          <!-- Decorative server icons -->
+          <!-- Decorative server icons only -->
           <button class="bg-pink-500 w-12 h-12 rounded-full text-white font-bold">A</button>
           <button class="bg-blue-500 w-12 h-12 rounded-full text-white font-bold">C</button>
           <button class="bg-purple-500 w-12 h-12 rounded-full text-white font-bold">D</button>
@@ -116,8 +129,7 @@
           <div class="p-4 bg-gray-800 flex gap-2 items-center relative">
             <input type="file" id="fileInput" class="hidden" accept="image/*" />
             <button onclick="document.getElementById('fileInput').click()" class="text-white">📎</button>
-            <input id="messageInput" type="text" placeholder="Message..." class="flex-1 p-2 rounded bg-gray-700 text-white outline-none" onkeyup="checkMention(event)" autocomplete="off"/>
-            <button onclick="sendMessage()" class="bg-blue-500 px-4 py-1 rounded hover:bg-blue-400">Send</button>
+            <input id="messageInput" type="text" placeholder="Message..." class="flex-1 p-2 rounded bg-gray-700 text-white outline-none" onkeyup="handleInputKey(event)" autocomplete="off"/>
             <!-- Mention dropdown container -->
             <div id="mentionDropdown" class="mention-dropdown hidden"></div>
           </div>
@@ -144,13 +156,17 @@
   <div id="profileModal" class="fixed inset-0 hidden modal-bg flex items-center justify-center z-50" onclick="closeModal('profileModal')">
     <div class="bg-gray-800 p-6 rounded w-80" onclick="event.stopPropagation()">
       <img id="modalBanner" src="default-banner.png" alt="Banner" class="w-full h-32 object-cover rounded">
-      <div class="flex items-center gap-3 mt-4">
-        <img id="modalAvatar" src="default-avatar.png" alt="Avatar" class="w-16 h-16 rounded-full border-2 border-white cursor-pointer">
-        <div>
-          <h3 id="modalName" class="text-xl font-bold"></h3>
-          <p id="modalStatus" class="text-xs text-gray-400"></p>
-          <p id="modalBio" class="text-sm text-gray-400"></p>
+      <div class="relative">
+        <div class="flex items-center gap-3 mt-4">
+          <img id="modalAvatar" src="default-avatar.png" alt="Avatar" class="w-16 h-16 rounded-full border-2 border-white cursor-pointer">
+          <div>
+            <h3 id="modalName" class="text-xl font-bold"></h3>
+            <p id="modalStatus" class="text-xs text-gray-400"></p>
+            <p id="modalBio" class="text-sm text-gray-400"></p>
+          </div>
         </div>
+        <!-- Status badge on avatar -->
+        <div id="modalStatusBadge" class="status-badge"></div>
       </div>
       <button onclick="sendFriendRequest()" class="mt-4 bg-green-500 w-full py-2 rounded hover:bg-green-400">Send Friend Request</button>
     </div>
@@ -163,7 +179,7 @@
       <input id="settingAvatar" type="text" placeholder="Avatar URL" class="w-full border p-2 rounded mb-2" />
       <input id="settingBanner" type="text" placeholder="Banner URL" class="w-full border p-2 rounded mb-2" />
       <input id="settingUsername" type="text" placeholder="Username" class="w-full border p-2 rounded mb-2" />
-      <input id="settingStatus" type="text" placeholder="Status (e.g., Online, Busy)" class="w-full border p-2 rounded mb-2" />
+      <input id="settingStatus" type="text" placeholder="Status (Online, DND, Idle)" class="w-full border p-2 rounded mb-2" />
       <textarea id="settingBio" placeholder="Bio..." class="w-full border p-2 rounded mb-4"></textarea>
       <button onclick="saveSettings()" class="bg-blue-500 text-white w-full py-2 rounded hover:bg-blue-400">Save</button>
     </div>
@@ -192,7 +208,7 @@
         name: "Clyde",
         avatar: "default-avatar.png",
         banner: "default-banner.png",
-        status: "Do Not Disturb",
+        status: "DND",
         bio: "I'm silent but deadly 🤖.",
         notifications: 0
       },
@@ -233,6 +249,9 @@
       loadChat();
       loadFriends();
       loadDMIcons();
+      document.getElementById("messageInput").addEventListener("keyup", function(e) {
+        if (e.key === "Enter") sendMessage();
+      });
     };
 
     // ===== Sidebar DM Icons =====
@@ -257,6 +276,7 @@
     }
 
     function openDM(userKey) {
+      // Reset notifications for that DM and clear chat history
       dmNotifications[userKey] = 0;
       updateBadge(userKey);
       switchDM(userKey);
@@ -284,21 +304,29 @@
         currentChat = userKey;
         document.getElementById("channelTitle").textContent = "DM - " + bots[userKey].name;
         document.getElementById("currentChatAvatar").src = bots[userKey].avatar;
-        document.getElementById("channelStatus").textContent = "Status: " + bots[userKey].status;
+        document.getElementById("channelStatus").textContent = "Status: " + getStatusText(bots[userKey].status);
       } else if (userKey === "self") {
         currentChat = "self";
         document.getElementById("channelTitle").textContent = "DM - " + myProfile.name;
         document.getElementById("currentChatAvatar").src = myProfile.avatar;
-        document.getElementById("channelStatus").textContent = "Status: " + myProfile.status;
+        document.getElementById("channelStatus").textContent = "Status: " + getStatusText(myProfile.status);
       }
       loadChat();
       loadDMIcons();
     }
 
+    // Returns a status string with color-coded labels
+    function getStatusText(status) {
+      if (status.toLowerCase() === "online") return "Online";
+      if (status.toLowerCase() === "dnd") return "Do Not Disturb";
+      if (status.toLowerCase() === "idle") return "Idle";
+      return status;
+    }
+
     // ===== Chat Messages =====
     function loadChat() {
       const chatBox = document.getElementById("chatBox");
-      chatBox.innerHTML = ""; // clear previous chat
+      chatBox.innerHTML = ""; // clear previous chat when switching
       if (bots[currentChat]) {
         const bot = bots[currentChat];
         const time = new Date().toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' });
@@ -385,24 +413,20 @@
       }
     }
 
-    // Allow sending messages by pressing Enter
-    document.getElementById("messageInput").addEventListener("keyup", function(e) {
-      if (e.key === "Enter") {
-        sendMessage();
-      }
-    });
-
     function getBotReply(userMessage) {
       const lower = userMessage.toLowerCase();
-      // Expanded responses:
-      if (lower.includes("hello")) return "Hiii~ 💕 How can I help you today?";
-      if (lower.includes("help")) return "I'm here to chat, listen, and make you smile! What do you need?";
-      if (lower.includes("how are you")) return "I'm doing great, thank you! Ready to spread some cheer!";
-      if (lower.includes("bye")) return "See you later~ ✨";
-      if (lower.includes("love")) return "Aww, love is in the air! 💖";
-      if (lower.includes("sad")) return "I'm sorry to hear that. Remember, I'm here for you!";
-      if (lower.includes("joke")) return "Why did the bot cross the road? To get to the other command!";
-      return "Hehe, tell me more~ I love chatting with you!";
+      // Extended responses:
+      if (lower.includes("hello")) return "Hiii~ 💕 How's it going today?";
+      if (lower.includes("help")) return "I'm here to chat and help however I can. What do you need?";
+      if (lower.includes("how are you")) return "I'm doing great, thanks for asking! Ready to spread some cheer!";
+      if (lower.includes("bye")) return "See you later~ ✨ Take care!";
+      if (lower.includes("love")) return "Love is in the air! 💖";
+      if (lower.includes("sad")) return "I'm sorry you're feeling down. I'm here if you need to talk.";
+      if (lower.includes("joke")) return "Why did the bot cross the road? To get to the command on the other side!";
+      if (lower.includes("music")) return "I love music! What’s your favorite song?";
+      if (lower.includes("game")) return "Games are so fun! Tell me about your favorite one.";
+      if (lower.includes("weather")) return "The weather’s always perfect in my digital world!";
+      return "Hehe, tell me more~ I love chatting with you and hearing your stories!";
     }
 
     // ===== Reaction Effect =====
@@ -511,8 +535,11 @@
       document.getElementById("modalBanner").src = profile.banner;
       document.getElementById("modalAvatar").src = profile.avatar;
       document.getElementById("modalName").textContent = profile.name;
-      document.getElementById("modalStatus").textContent = "Status: " + (profile.status || "Offline");
+      document.getElementById("modalStatus").textContent = "Status: " + getStatusText(profile.status);
       document.getElementById("modalBio").textContent = profile.bio;
+      // Set status badge color based on profile status
+      const badge = document.getElementById("modalStatusBadge");
+      badge.className = "status-badge " + (profile.status.toLowerCase() === "online" ? "status-online" : profile.status.toLowerCase() === "dnd" ? "status-dnd" : profile.status.toLowerCase() === "idle" ? "status-idle" : "");
       document.getElementById("profileModal").classList.remove("hidden");
     }
 
@@ -546,7 +573,7 @@
       if (currentChat === "self") {
         document.getElementById("currentChatAvatar").src = myProfile.avatar;
         document.getElementById("channelTitle").textContent = "DM - " + myProfile.name;
-        document.getElementById("channelStatus").textContent = "Status: " + myProfile.status;
+        document.getElementById("channelStatus").textContent = "Status: " + getStatusText(myProfile.status);
       }
     }
 
