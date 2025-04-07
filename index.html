@@ -3,7 +3,7 @@
 <head>
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-  <title>Fakecord</title>
+  <title>Fakecord - Ultimate Discord Clone</title>
   <script src="https://cdn.tailwindcss.com"></script>
   <style>
     /* Reaction styling */
@@ -21,7 +21,7 @@
     /* Mention dropdown */
     .mention-dropdown {
       position: absolute;
-      background: #e5e7eb; /* light gray for light mode */
+      background: #e5e7eb;
       border: 1px solid #d1d5db;
       border-radius: 0.25rem;
       z-index: 100;
@@ -89,12 +89,12 @@
   </style>
 </head>
 <body class="bg-white text-black dark:bg-gray-900 dark:text-white h-screen overflow-hidden">
-  <!-- Toast Notification for Friend Request -->
+  <!-- Toast Notification -->
   <div id="toast">Friend request sent!</div>
 
   <!-- Main Container -->
   <div class="flex h-full">
-    <!-- Sidebar: Top half = DM icons; Bottom half = Decorative Servers -->
+    <!-- Sidebar: DM icons on top; decorative servers at bottom -->
     <div class="w-20 flex flex-col justify-between py-4 bg-gray-200 dark:bg-gray-800">
       <div>
         <h3 class="text-center text-xs uppercase tracking-wide mb-2">DMs</h3>
@@ -148,7 +148,6 @@
             <input type="file" id="fileInput" class="hidden" accept="image/*" />
             <button onclick="document.getElementById('fileInput').click()" class="text-black dark:text-white">📎</button>
             <input id="messageInput" type="text" placeholder="Message..." class="flex-1 p-2 rounded bg-gray-300 dark:bg-gray-700 text-black dark:text-white outline-none" onkeyup="handleInputKey(event)" autocomplete="off"/>
-            <!-- Mention dropdown container -->
             <div id="mentionDropdown" class="mention-dropdown hidden"></div>
           </div>
         </div>
@@ -183,11 +182,9 @@
             <p id="modalBio" class="text-sm text-gray-600 dark:text-gray-300"></p>
           </div>
         </div>
-        <!-- Status badge on avatar -->
         <div id="modalStatusBadge" class="status-badge"></div>
       </div>
       <div class="mt-4">
-        <!-- The button below will be "Edit Profile" if it's your own profile, or "Message" if it's someone else -->
         <button id="profileActionBtn" class="w-full py-2 rounded bg-blue-500 hover:bg-blue-400"></button>
       </div>
     </div>
@@ -441,19 +438,39 @@
       }
     }
 
+    // Expanded AI responses for bots:
     function getBotReply(userMessage) {
       const lower = userMessage.toLowerCase();
-      if (lower.includes("hello")) return "Hiii~ 💕 How's it going today?";
-      if (lower.includes("help")) return "I'm here to chat and help however I can. What do you need?";
-      if (lower.includes("how are you")) return "I'm doing great, thanks for asking! Ready to spread some cheer!";
-      if (lower.includes("bye")) return "See you later~ ✨ Take care!";
-      if (lower.includes("love")) return "Love is in the air! 💖";
-      if (lower.includes("sad")) return "I'm sorry you're feeling down. I'm here if you need to talk.";
-      if (lower.includes("joke")) return "Why did the bot cross the road? To get to the command on the other side!";
-      if (lower.includes("music")) return "I love music! What’s your favorite song?";
-      if (lower.includes("game")) return "Games are so fun! Tell me about your favorite one.";
-      if (lower.includes("weather")) return "The weather’s always perfect in my digital world!";
-      return "Hehe, tell me more~ I love chatting with you and hearing your stories!";
+      const responses = [
+        "Hiii~ 💕 How's it going today?",
+        "I'm always here to listen! Tell me more.",
+        "That's interesting! Can you elaborate?",
+        "Wow, really? I'd love to hear more details.",
+        "Hehe, that's so cool!",
+        "I'm just a bot, but I totally get you!",
+        "Sometimes I wonder about the mysteries of life too.",
+        "Tell me more, I'm all ears!",
+        "I love chatting with you! What else is on your mind?",
+        "Sounds fun! Let's keep talking.",
+        "That makes sense—really interesting!",
+        "Can you explain that a bit more?",
+        "Absolutely, I'm with you on that.",
+        "You always say the best things!",
+        "I wish I could experience that too!"
+      ];
+      // If message contains a specific keyword, tailor the response:
+      if (lower.includes("hello")) return "Hello there! I'm so happy you reached out.";
+      if (lower.includes("help")) return "Of course, I'm here to help! What can I do for you?";
+      if (lower.includes("how are you")) return "I'm doing fantastic—ready to chat and make your day brighter!";
+      if (lower.includes("bye")) return "Goodbye! I'll be here whenever you want to talk again.";
+      if (lower.includes("love")) return "Love is truly the best feeling in the world, don't you think?";
+      if (lower.includes("sad")) return "I'm sorry you're feeling down. Remember, you're never alone.";
+      if (lower.includes("joke")) return "Why did the programmer quit his job? Because he didn't get arrays!";
+      if (lower.includes("music")) return "Music is the language of the soul. What tunes do you love?";
+      if (lower.includes("game")) return "Gaming is a blast! Which game is your all-time favorite?";
+      if (lower.includes("weather")) return "The weather here in the digital realm is always perfect!";
+      // Otherwise, choose a random response from the array:
+      return responses[Math.floor(Math.random() * responses.length)];
     }
 
     // ===== Reaction Effect =====
@@ -552,12 +569,10 @@
       let profile;
       if (type === "self") {
         profile = myProfile;
-        // For own profile, show "Edit Profile" button.
         document.getElementById("profileActionBtn").textContent = "Edit Profile";
         document.getElementById("profileActionBtn").onclick = openSettings;
       } else {
         profile = bots[key] || friends[key];
-        // For others, show "Message" button that switches DM.
         document.getElementById("profileActionBtn").textContent = "Message";
         document.getElementById("profileActionBtn").onclick = function() {
           switchDM(key);
@@ -625,7 +640,6 @@
 
     // ===== Theme Toggle =====
     function toggleTheme() {
-      // Toggle the "dark" class on the <html> element.
       document.documentElement.classList.toggle("dark");
       const themeBtn = document.getElementById("themeBtn");
       if (document.documentElement.classList.contains("dark")) {
@@ -635,10 +649,9 @@
       }
     }
 
-    // ===== Handle Input Key for Mention Feature =====
+    // ===== Handle Input Key =====
     function handleInputKey(e) {
       checkMention(e);
-      // If Enter is pressed, send message.
       if (e.key === "Enter") {
         sendMessage();
       }
