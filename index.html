@@ -1,5 +1,5 @@
 <!DOCTYPE html>
-<html lang="en" class="scroll-smooth">
+<html lang="en" class="dark scroll-smooth">
 <head>
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
@@ -21,17 +21,24 @@
     /* Mention dropdown */
     .mention-dropdown {
       position: absolute;
-      background: #1f2937;
-      border: 1px solid #374151;
+      background: #e5e7eb; /* light gray for light mode */
+      border: 1px solid #d1d5db;
       border-radius: 0.25rem;
       z-index: 100;
       width: 200px;
+    }
+    .dark .mention-dropdown {
+      background: #1f2937;
+      border-color: #374151;
     }
     .mention-item {
       padding: 0.5rem;
       cursor: pointer;
     }
     .mention-item:hover {
+      background: #d1d5db;
+    }
+    .dark .mention-item:hover {
       background: #374151;
     }
     /* Message with mention glow */
@@ -81,14 +88,14 @@
     }
   </style>
 </head>
-<body class="bg-gray-900 text-white h-screen overflow-hidden">
+<body class="bg-white text-black dark:bg-gray-900 dark:text-white h-screen overflow-hidden">
   <!-- Toast Notification for Friend Request -->
   <div id="toast">Friend request sent!</div>
 
   <!-- Main Container -->
   <div class="flex h-full">
-    <!-- Sidebar: DM icons on top, decorative servers at bottom -->
-    <div class="bg-gray-800 w-20 flex flex-col justify-between py-4">
+    <!-- Sidebar: Top half = DM icons; Bottom half = Decorative Servers -->
+    <div class="w-20 flex flex-col justify-between py-4 bg-gray-200 dark:bg-gray-800">
       <div>
         <h3 class="text-center text-xs uppercase tracking-wide mb-2">DMs</h3>
         <div id="dmSection" class="flex flex-col space-y-4">
@@ -96,14 +103,14 @@
         </div>
       </div>
       <div>
-        <hr class="border-gray-600 my-2" />
+        <hr class="border-gray-400 dark:border-gray-600 my-2" />
         <h3 class="text-center text-xs uppercase tracking-wide mb-2">Servers</h3>
         <div id="serverSection" class="flex flex-col items-center space-y-4">
           <!-- Decorative server icons only -->
-          <button class="bg-pink-500 w-12 h-12 rounded-full text-white font-bold">A</button>
-          <button class="bg-blue-500 w-12 h-12 rounded-full text-white font-bold">C</button>
-          <button class="bg-purple-500 w-12 h-12 rounded-full text-white font-bold">D</button>
-          <button class="bg-gray-700 w-12 h-12 rounded-full text-xl flex items-center justify-center">+</button>
+          <button class="w-12 h-12 rounded-full bg-pink-500 text-white font-bold">A</button>
+          <button class="w-12 h-12 rounded-full bg-blue-500 text-white font-bold">C</button>
+          <button class="w-12 h-12 rounded-full bg-purple-500 text-white font-bold">D</button>
+          <button class="w-12 h-12 rounded-full bg-gray-500 text-xl flex items-center justify-center">+</button>
         </div>
       </div>
     </div>
@@ -111,36 +118,36 @@
     <!-- Main Panel -->
     <div class="flex flex-col flex-1">
       <!-- Top Bar with Tabs -->
-      <div class="bg-gray-700 flex items-center justify-between p-4">
+      <div class="p-4 flex items-center justify-between bg-gray-300 dark:bg-gray-700">
         <div class="flex space-x-4">
           <button onclick="showTab('chat')" id="chatTabBtn" class="px-3 py-1 rounded bg-blue-500">Chat</button>
-          <button onclick="showTab('friends')" id="friendsTabBtn" class="px-3 py-1 rounded bg-gray-600 hover:bg-gray-500">Friends</button>
+          <button onclick="showTab('friends')" id="friendsTabBtn" class="px-3 py-1 rounded bg-gray-400 dark:bg-gray-600 hover:bg-gray-300 dark:hover:bg-gray-500">Friends</button>
         </div>
         <div class="flex items-center gap-2">
-          <button onclick="toggleTheme()" id="themeBtn" class="px-3 py-1 rounded bg-gray-600 hover:bg-gray-500">Toggle Theme</button>
+          <button onclick="toggleTheme()" id="themeBtn" class="px-3 py-1 rounded bg-gray-400 dark:bg-gray-600 hover:bg-gray-300 dark:hover:bg-gray-500">Toggle Theme</button>
           <button onclick="openSettings()" class="px-3 py-1 rounded bg-green-500 hover:bg-green-400">Settings</button>
         </div>
       </div>
 
       <!-- Content Area -->
-      <div class="flex-1 relative overflow-hidden">
+      <div class="relative flex-1 overflow-hidden">
         <!-- Chat View -->
         <div id="chatView" class="absolute inset-0 flex flex-col">
           <!-- Chat Header -->
-          <div class="bg-gray-800 p-4 flex items-center gap-3">
+          <div class="p-4 flex items-center gap-3 bg-gray-200 dark:bg-gray-800">
             <img id="currentChatAvatar" src="default-avatar.png" alt="Chat Avatar" class="w-10 h-10 rounded-full cursor-pointer" onclick="showProfile(currentChat, 'bot')">
             <div>
               <h2 id="channelTitle" class="text-xl font-bold">DM - Anne</h2>
-              <p id="channelStatus" class="text-xs text-gray-400">Status: Online</p>
+              <p id="channelStatus" class="text-xs text-gray-600 dark:text-gray-300">Status: Online</p>
             </div>
           </div>
           <!-- Chat Messages -->
-          <div id="chatBox" class="flex-1 overflow-y-auto p-4 space-y-4 bg-gray-900 relative"></div>
+          <div id="chatBox" class="flex-1 overflow-y-auto p-4 space-y-4 bg-gray-100 dark:bg-gray-900 relative"></div>
           <!-- Message Input Area -->
-          <div class="p-4 bg-gray-800 flex gap-2 items-center relative">
+          <div class="p-4 flex gap-2 items-center bg-gray-200 dark:bg-gray-800 relative">
             <input type="file" id="fileInput" class="hidden" accept="image/*" />
-            <button onclick="document.getElementById('fileInput').click()" class="text-white">📎</button>
-            <input id="messageInput" type="text" placeholder="Message..." class="flex-1 p-2 rounded bg-gray-700 text-white outline-none" onkeyup="handleInputKey(event)" autocomplete="off"/>
+            <button onclick="document.getElementById('fileInput').click()" class="text-black dark:text-white">📎</button>
+            <input id="messageInput" type="text" placeholder="Message..." class="flex-1 p-2 rounded bg-gray-300 dark:bg-gray-700 text-black dark:text-white outline-none" onkeyup="handleInputKey(event)" autocomplete="off"/>
             <!-- Mention dropdown container -->
             <div id="mentionDropdown" class="mention-dropdown hidden"></div>
           </div>
@@ -148,14 +155,14 @@
 
         <!-- Friends View -->
         <div id="friendsView" class="absolute inset-0 hidden flex-col">
-          <div class="bg-gray-800 p-4">
+          <div class="p-4 bg-gray-200 dark:bg-gray-800">
             <h2 class="text-xl font-bold">Friends</h2>
           </div>
-          <div id="friendsList" class="flex-1 overflow-y-auto p-4 space-y-4 bg-gray-900">
+          <div id="friendsList" class="flex-1 overflow-y-auto p-4 space-y-4 bg-gray-100 dark:bg-gray-900">
             <!-- Friends list injected by JS -->
           </div>
-          <div class="p-4 bg-gray-800">
-            <input id="addFriendInput" type="text" placeholder="Add friend by username" class="w-full p-2 rounded bg-gray-700 text-white outline-none" />
+          <div class="p-4 bg-gray-200 dark:bg-gray-800">
+            <input id="addFriendInput" type="text" placeholder="Add friend by username" class="w-full p-2 rounded bg-gray-300 dark:bg-gray-700 text-black dark:text-white outline-none" />
             <button onclick="addFriend()" class="mt-2 w-full bg-green-500 p-2 rounded hover:bg-green-400">Send Friend Request</button>
           </div>
         </div>
@@ -165,34 +172,37 @@
 
   <!-- Profile Modal -->
   <div id="profileModal" class="fixed inset-0 hidden modal-bg flex items-center justify-center z-50" onclick="closeModal('profileModal')">
-    <div class="bg-gray-800 p-6 rounded w-80" onclick="event.stopPropagation()">
+    <div class="p-6 rounded w-80 bg-gray-200 dark:bg-gray-800" onclick="event.stopPropagation()">
       <img id="modalBanner" src="default-banner.png" alt="Banner" class="w-full h-32 object-cover rounded">
-      <div class="relative">
-        <div class="flex items-center gap-3 mt-4">
+      <div class="relative mt-4">
+        <div class="flex items-center gap-3">
           <img id="modalAvatar" src="default-avatar.png" alt="Avatar" class="w-16 h-16 rounded-full border-2 border-white cursor-pointer">
           <div>
             <h3 id="modalName" class="text-xl font-bold"></h3>
-            <p id="modalStatus" class="text-xs text-gray-400"></p>
-            <p id="modalBio" class="text-sm text-gray-400"></p>
+            <p id="modalStatus" class="text-xs text-gray-600 dark:text-gray-300"></p>
+            <p id="modalBio" class="text-sm text-gray-600 dark:text-gray-300"></p>
           </div>
         </div>
         <!-- Status badge on avatar -->
         <div id="modalStatusBadge" class="status-badge"></div>
       </div>
-      <button onclick="sendFriendRequest()" class="mt-4 bg-green-500 w-full py-2 rounded hover:bg-green-400">Send Friend Request</button>
+      <div class="mt-4">
+        <!-- The button below will be "Edit Profile" if it's your own profile, or "Message" if it's someone else -->
+        <button id="profileActionBtn" class="w-full py-2 rounded bg-blue-500 hover:bg-blue-400"></button>
+      </div>
     </div>
   </div>
 
   <!-- Settings Modal -->
   <div id="settingsModal" class="fixed inset-0 hidden modal-bg flex items-center justify-center z-50" onclick="closeModal('settingsModal')">
-    <div class="bg-white text-black p-6 rounded w-96" onclick="event.stopPropagation()">
+    <div class="p-6 rounded w-96 bg-white dark:bg-gray-700 text-black dark:text-white" onclick="event.stopPropagation()">
       <h2 class="text-lg font-bold mb-4">Edit My Profile</h2>
       <input id="settingAvatar" type="text" placeholder="Avatar URL" class="w-full border p-2 rounded mb-2" />
       <input id="settingBanner" type="text" placeholder="Banner URL" class="w-full border p-2 rounded mb-2" />
       <input id="settingUsername" type="text" placeholder="Username" class="w-full border p-2 rounded mb-2" />
       <input id="settingStatus" type="text" placeholder="Status (Online, DND, Idle)" class="w-full border p-2 rounded mb-2" />
       <textarea id="settingBio" placeholder="Bio..." class="w-full border p-2 rounded mb-4"></textarea>
-      <button onclick="saveSettings()" class="bg-blue-500 text-white w-full py-2 rounded hover:bg-blue-400">Save</button>
+      <button onclick="saveSettings()" class="w-full py-2 rounded bg-blue-500 hover:bg-blue-400">Save</button>
     </div>
   </div>
 
@@ -287,7 +297,6 @@
     }
 
     function openDM(userKey) {
-      // Reset notifications for that DM and clear chat history
       dmNotifications[userKey] = 0;
       updateBadge(userKey);
       switchDM(userKey);
@@ -304,9 +313,9 @@
       document.getElementById("chatView").classList.toggle("hidden", tab !== "chat");
       document.getElementById("friendsView").classList.toggle("hidden", tab !== "friends");
       document.getElementById("chatTabBtn").classList.toggle("bg-blue-500", tab === "chat");
-      document.getElementById("chatTabBtn").classList.toggle("bg-gray-600", tab !== "chat");
+      document.getElementById("chatTabBtn").classList.toggle("bg-gray-400", tab !== "chat");
       document.getElementById("friendsTabBtn").classList.toggle("bg-blue-500", tab === "friends");
-      document.getElementById("friendsTabBtn").classList.toggle("bg-gray-600", tab !== "friends");
+      document.getElementById("friendsTabBtn").classList.toggle("bg-gray-400", tab !== "friends");
     }
 
     // ===== DM (Chat Partner) Switching =====
@@ -326,7 +335,6 @@
       loadDMIcons();
     }
 
-    // Returns a status string with color-coded labels
     function getStatusText(status) {
       if (status.toLowerCase() === "online") return "Online";
       if (status.toLowerCase() === "dnd") return "Do Not Disturb";
@@ -337,7 +345,7 @@
     // ===== Chat Messages =====
     function loadChat() {
       const chatBox = document.getElementById("chatBox");
-      chatBox.innerHTML = ""; // clear previous chat when switching
+      chatBox.innerHTML = "";
       if (bots[currentChat]) {
         const bot = bots[currentChat];
         const time = new Date().toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' });
@@ -347,7 +355,7 @@
             <div>
               <div class="flex items-center gap-2">
                 <span class="font-semibold">${bot.name}</span>
-                <span class="text-xs text-gray-400">${time}</span>
+                <span class="text-xs text-gray-600 dark:text-gray-300">${time}</span>
               </div>
               <p>Hello! I'm ${bot.name}. Let's chat!</p>
               <div class="flex gap-2 mt-1">
@@ -382,7 +390,7 @@
           <div>
             <div class="flex items-center gap-2">
               <span class="font-semibold">${myProfile.name}</span>
-              <span class="text-xs text-gray-400">${time}</span>
+              <span class="text-xs text-gray-600 dark:text-gray-300">${time}</span>
             </div>
             <p>${message}</p>
             ${fileHTML}
@@ -397,13 +405,12 @@
       messageInput.value = "";
       chatBox.scrollTop = chatBox.scrollHeight;
 
-      // Show typing indicator for bot
       if (bots[currentChat]) {
         const botName = bots[currentChat].name;
         const typingHTML = `
           <div id="typingIndicator" class="flex items-start gap-3">
             <img src="${bots[currentChat].avatar}" class="w-10 h-10 rounded-full">
-            <div class="italic text-gray-400 typing-indicator">${botName} is typing</div>
+            <div class="italic text-gray-600 dark:text-gray-300 typing-indicator">${botName} is typing</div>
           </div>`;
         chatBox.innerHTML += typingHTML;
         chatBox.scrollTop = chatBox.scrollHeight;
@@ -418,7 +425,7 @@
               <div>
                 <div class="flex items-center gap-2">
                   <span class="font-semibold">${bots[currentChat].name}</span>
-                  <span class="text-xs text-gray-400">${replyTime}</span>
+                  <span class="text-xs text-gray-600 dark:text-gray-300">${replyTime}</span>
                 </div>
                 <p>${botReply}</p>
                 <div class="flex gap-2 mt-1">
@@ -436,7 +443,6 @@
 
     function getBotReply(userMessage) {
       const lower = userMessage.toLowerCase();
-      // Extended responses with lots of variety:
       if (lower.includes("hello")) return "Hiii~ 💕 How's it going today?";
       if (lower.includes("help")) return "I'm here to chat and help however I can. What do you need?";
       if (lower.includes("how are you")) return "I'm doing great, thanks for asking! Ready to spread some cheer!";
@@ -511,14 +517,14 @@
       const friendsList = document.getElementById("friendsList");
       friendsList.innerHTML = "";
       friendsList.innerHTML += `
-        <div class="flex items-center gap-3 p-2 bg-gray-700 rounded cursor-pointer" onclick="showProfile('self','self')">
+        <div class="flex items-center gap-3 p-2 bg-gray-300 dark:bg-gray-700 rounded cursor-pointer" onclick="showProfile('self','self')">
           <img src="${myProfile.avatar}" class="w-10 h-10 rounded-full">
           <span class="font-semibold">${myProfile.name}</span>
         </div>`;
       for (let key in friends) {
         let friend = friends[key];
         friendsList.innerHTML += `
-          <div class="flex items-center gap-3 p-2 bg-gray-700 rounded cursor-pointer" onclick="showProfile('${key}','bot')">
+          <div class="flex items-center gap-3 p-2 bg-gray-300 dark:bg-gray-700 rounded cursor-pointer" onclick="showProfile('${key}','bot')">
             <img src="${friend.avatar}" class="w-10 h-10 rounded-full">
             <span class="font-semibold">${friend.name}</span>
           </div>`;
@@ -546,8 +552,17 @@
       let profile;
       if (type === "self") {
         profile = myProfile;
+        // For own profile, show "Edit Profile" button.
+        document.getElementById("profileActionBtn").textContent = "Edit Profile";
+        document.getElementById("profileActionBtn").onclick = openSettings;
       } else {
         profile = bots[key] || friends[key];
+        // For others, show "Message" button that switches DM.
+        document.getElementById("profileActionBtn").textContent = "Message";
+        document.getElementById("profileActionBtn").onclick = function() {
+          switchDM(key);
+          closeModal('profileModal');
+        };
         if (bots[key]) {
           dmNotifications[key] = 0;
           updateBadge(key);
@@ -561,10 +576,6 @@
       const badge = document.getElementById("modalStatusBadge");
       badge.className = "status-badge " + (profile.status.toLowerCase() === "online" ? "status-online" : profile.status.toLowerCase() === "dnd" ? "status-dnd" : profile.status.toLowerCase() === "idle" ? "status-idle" : "");
       document.getElementById("profileModal").classList.remove("hidden");
-    }
-
-    function sendFriendRequest() {
-      showToast("Friend request sent!");
     }
 
     // ===== Settings Modal =====
@@ -614,15 +625,22 @@
 
     // ===== Theme Toggle =====
     function toggleTheme() {
-      const body = document.body;
-      if (body.classList.contains("bg-gray-900")) {
-        body.classList.remove("bg-gray-900", "text-white");
-        body.classList.add("bg-white", "text-black");
-        document.getElementById("themeBtn").textContent = "Dark Mode";
+      // Toggle the "dark" class on the <html> element.
+      document.documentElement.classList.toggle("dark");
+      const themeBtn = document.getElementById("themeBtn");
+      if (document.documentElement.classList.contains("dark")) {
+        themeBtn.textContent = "Toggle Theme";
       } else {
-        body.classList.remove("bg-white", "text-black");
-        body.classList.add("bg-gray-900", "text-white");
-        document.getElementById("themeBtn").textContent = "Light Mode";
+        themeBtn.textContent = "Toggle Theme";
+      }
+    }
+
+    // ===== Handle Input Key for Mention Feature =====
+    function handleInputKey(e) {
+      checkMention(e);
+      // If Enter is pressed, send message.
+      if (e.key === "Enter") {
+        sendMessage();
       }
     }
   </script>
