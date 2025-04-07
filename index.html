@@ -68,6 +68,17 @@
     .status-online { background-color: #22c55e; }   /* Green */
     .status-dnd { background-color: #ef4444; }        /* Red */
     .status-idle { background-color: #eab308; }       /* Yellow */
+    /* Typing Indicator Animation */
+    @keyframes ellipsis {
+      0% { content: ''; }
+      33% { content: '.'; }
+      66% { content: '..'; }
+      100% { content: '...'; }
+    }
+    .typing-indicator::after {
+      content: '...';
+      animation: ellipsis 1s infinite;
+    }
   </style>
 </head>
 <body class="bg-gray-900 text-white h-screen overflow-hidden">
@@ -386,9 +397,19 @@
       messageInput.value = "";
       chatBox.scrollTop = chatBox.scrollHeight;
 
-      // Bot reply if chatting with a bot
+      // Show typing indicator for bot
       if (bots[currentChat]) {
+        const botName = bots[currentChat].name;
+        const typingHTML = `
+          <div id="typingIndicator" class="flex items-start gap-3">
+            <img src="${bots[currentChat].avatar}" class="w-10 h-10 rounded-full">
+            <div class="italic text-gray-400 typing-indicator">${botName} is typing</div>
+          </div>`;
+        chatBox.innerHTML += typingHTML;
+        chatBox.scrollTop = chatBox.scrollHeight;
         setTimeout(() => {
+          const typingIndicator = document.getElementById("typingIndicator");
+          if (typingIndicator) typingIndicator.remove();
           const botReply = getBotReply(message);
           const replyTime = new Date().toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' });
           const replyHTML = `
@@ -409,13 +430,13 @@
             </div>`;
           chatBox.innerHTML += replyHTML;
           chatBox.scrollTop = chatBox.scrollHeight;
-        }, 1000);
+        }, 2000);
       }
     }
 
     function getBotReply(userMessage) {
       const lower = userMessage.toLowerCase();
-      // Extended responses:
+      // Extended responses with lots of variety:
       if (lower.includes("hello")) return "Hiii~ 💕 How's it going today?";
       if (lower.includes("help")) return "I'm here to chat and help however I can. What do you need?";
       if (lower.includes("how are you")) return "I'm doing great, thanks for asking! Ready to spread some cheer!";
@@ -537,7 +558,6 @@
       document.getElementById("modalName").textContent = profile.name;
       document.getElementById("modalStatus").textContent = "Status: " + getStatusText(profile.status);
       document.getElementById("modalBio").textContent = profile.bio;
-      // Set status badge color based on profile status
       const badge = document.getElementById("modalStatusBadge");
       badge.className = "status-badge " + (profile.status.toLowerCase() === "online" ? "status-online" : profile.status.toLowerCase() === "dnd" ? "status-dnd" : profile.status.toLowerCase() === "idle" ? "status-idle" : "");
       document.getElementById("profileModal").classList.remove("hidden");
